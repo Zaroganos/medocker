@@ -564,6 +564,106 @@ def generate_docker_compose(config, output_file='docker-compose.yml'):
         compose['services']['portainer'] = portainer_service
         compose['volumes']['portainer_data'] = {'driver': 'local'}
     
+    # Add Rustdesk if enabled
+    if config['additional_services']['rustdesk']['enabled']:
+        # Create server and relay configuration
+        rustdesk_hbbs_service = {
+            'image': f"rustdesk/rustdesk-server:{config['additional_services']['rustdesk']['version']}",
+            'restart': 'unless-stopped',
+            'container_name': 'rustdesk-hbbs',
+            'ports': [
+                f"{config['additional_services']['rustdesk']['hbbs_port']}:21115/tcp",
+                f"{config['additional_services']['rustdesk']['hbbs_port']}:21115/udp",
+                f"{config['additional_services']['rustdesk']['hbbs_port']}:21116/tcp",
+                f"{config['additional_services']['rustdesk']['hbbs_port']}:21116/udp",
+                f"{config['additional_services']['rustdesk']['web_port']}:8080"
+            ],
+            'volumes': [
+                './data/rustdesk:/root',
+            ],
+            'command': 'hbbs -r rustdesk-hbbr:21117',
+            'environment': {
+                'RUSTDESK_RELAY_SERVER': 'rustdesk-hbbr:21117',
+                'RUSTDESK_KEY': config['additional_services']['rustdesk']['key_base']
+            },
+            'networks': [
+                'medocker_network'
+            ],
+            'depends_on': [
+                'rustdesk-hbbr'
+            ]
+        }
+        
+        rustdesk_hbbr_service = {
+            'image': f"rustdesk/rustdesk-server:{config['additional_services']['rustdesk']['version']}",
+            'restart': 'unless-stopped',
+            'container_name': 'rustdesk-hbbr',
+            'ports': [
+                f"{config['additional_services']['rustdesk']['relay_port']}:21117/tcp",
+                f"{config['additional_services']['rustdesk']['relay_port']}:21117/udp"
+            ],
+            'command': 'hbbr',
+            'volumes': [
+                './data/rustdesk:/root',
+            ],
+            'networks': [
+                'medocker_network'
+            ]
+        }
+        
+        # Add Traefik routing if enabled
+        if config['infrastructure']['traefik']['enabled']:
+            rustdesk_hbbs_service['labels'] = [
+                'traefik.enable=true',
+                'traefik.http.routers.rustdesk.rule=Host(`rustdesk.' + config['system']['domain'] + '`)',
+                'traefik.http.routers.rustdesk.entrypoints=websecure',
+                'traefik.http.routers.rustdesk.tls=true',
+                'traefik.http.services.rustdesk.loadbalancer.server.port=8080'
+            ]
+        
+        compose['services']['rustdesk-hbbs'] = rustdesk_hbbs_service
+        compose['services']['rustdesk-hbbr'] = rustdesk_hbbr_service
+        compose['volumes']['rustdesk_data'] = {'driver': 'local'}
+    
+    # Add Fasten Health if enabled
+    if config['additional_services']['fasten_health']['enabled']:
+        fasten_health_service = {
+            'image': f"fastenhealth/fasten-onprem:{config['additional_services']['fasten_health']['version']}",
+            'restart': 'unless-stopped',
+            'container_name': 'fasten-health',
+            'environment': {
+                'FASTEN_HOST': config['additional_services']['fasten_health']['host'],
+                'FASTEN_PORT': config['additional_services']['fasten_health']['port'],
+                'FASTEN_USER_EMAIL': 'admin@example.com',
+                'FASTEN_USER_PASSWORD': 'changeme',
+                'FASTEN_ALLOW_SIGNUP': 'true'
+            },
+            'volumes': [
+                './data/fasten-health:/app/backend/storage',
+            ],
+            'networks': [
+                'medocker_network'
+            ]
+        }
+        
+        # Add Traefik routing if enabled
+        if config['infrastructure']['traefik']['enabled']:
+            fasten_health_service['labels'] = [
+                'traefik.enable=true',
+                'traefik.http.routers.fastenhealth.rule=Host(`fastenhealth.' + config['system']['domain'] + '`)',
+                'traefik.http.routers.fastenhealth.entrypoints=websecure',
+                'traefik.http.routers.fastenhealth.tls=true',
+                'traefik.http.services.fastenhealth.loadbalancer.server.port=' + str(config['additional_services']['fasten_health']['port'])
+            ]
+        else:
+            # If Traefik is not enabled, expose port directly
+            fasten_health_service['ports'] = [
+                f"{config['additional_services']['fasten_health']['port']}:{config['additional_services']['fasten_health']['port']}"
+            ]
+        
+        compose['services']['fasten-health'] = fasten_health_service
+        compose['volumes']['fasten_health_data'] = {'driver': 'local'}
+    
     # Add additional services as needed
     # This is just a starting point - you would add more service definitions
     # based on which are enabled in the configuration

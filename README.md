@@ -32,6 +32,10 @@ Medocker includes a wide range of software components organized into categories:
 - **Keycloak** - Enterprise-grade identity provider for single sign-on across all services
 
 ### Additional Services
+- **Remote Access**
+  - **Rustdesk** - Open-source remote desktop software for secure remote support and access
+- **Health Records**
+  - **Fasten Health** - Self-hosted health record aggregation platform to manage medical data
 - Medical Device Integration (Mirth Connect, OpenHIM)
 - Security Infrastructure (Vault, Wazuh, OpenVAS)
 - Backup and Disaster Recovery (Duplicati, MinIO, Barman)

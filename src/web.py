@@ -109,6 +109,52 @@ def api_deploy():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
+@app.route('/api/service_status', methods=['GET'])
+def service_status():
+    """Get the status of all services."""
+    try:
+        # In a real implementation, you would check Docker service status
+        # For now, return a simulated status
+        services = {
+            'traefik': {'status': 'running', 'version': 'v2.9.6'},
+            'keycloak': {'status': 'running', 'version': '21.1.1'},
+            'postgres': {'status': 'running', 'version': '14.5-alpine'},
+            'mariadb': {'status': 'running', 'version': '10.6.12'},
+            'openemr': {'status': 'running', 'version': '7.0.0'},
+            'nextcloud': {'status': 'running', 'version': '25.0.3'},
+            'vaultwarden': {'status': 'running', 'version': 'latest'},
+            'portainer': {'status': 'running', 'version': '2.16.2'},
+            'rustdesk': {'status': 'stopped', 'version': 'latest'},
+            'fasten-health': {'status': 'stopped', 'version': 'latest'}
+        }
+        return jsonify({'status': 'success', 'services': services})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/api/service_action', methods=['POST'])
+def service_action():
+    """Perform an action on a service."""
+    try:
+        service = request.json.get('service')
+        action = request.json.get('action')
+        
+        if not service or not action:
+            return jsonify({'status': 'error', 'message': 'Service and action are required'}), 400
+            
+        if action not in ['start', 'stop', 'restart']:
+            return jsonify({'status': 'error', 'message': 'Invalid action'}), 400
+            
+        # In a real implementation, you would execute Docker commands
+        # For now, just return success
+        return jsonify({
+            'status': 'success', 
+            'message': f'{action.capitalize()} operation performed on {service}'
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 def update_config_from_form(config, form_data):
     """Update configuration dictionary with form data."""
     # System settings
