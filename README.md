@@ -137,9 +137,9 @@ This will create platform-specific packages in the project root directory:
 - `medocker-linux.zip` for Linux
 - `medocker-macos.zip` for macOS
 
-## Standalone Executables
+## Standalone Executable
 
-Medocker is distributed as standalone single-file executables for all major platforms, making it easy to use without installing Python or any dependencies.
+Medocker is distributed as a single executable file for all major platforms, making it easy to use without installing Python or any dependencies.
 
 ### For End Users
 
@@ -150,53 +150,55 @@ Simply download the appropriate package for your platform:
    - `medocker-linux.zip` for Linux
    - `medocker-macos.zip` for macOS
 
-2. Extract the zip file to get the executables:
-   - `medocker.exe` (Windows) or `medocker` (Linux/macOS) - The main CLI application
-   - `medocker-configure.exe` (Windows) or `medocker-configure` (Linux/macOS) - The configuration tool
-   - `medocker-web.exe` (Windows) or `medocker-web` (Linux/macOS) - The web interface
+2. Extract the zip file to get the executable:
+   - `medocker.exe` (Windows) or `medocker` (Linux/macOS)
 
-3. Run the executables directly without any installation:
+3. Run the executable:
    ```bash
    # On Windows:
-   medocker.exe --help
+   medocker.exe
    
    # On Linux/macOS:
-   ./medocker --help
+   ./medocker
+   ```
+   
+   This will automatically launch the web interface, which is the primary way to interact with Medocker.
+
+4. You can also use specific commands if needed:
+   ```bash
+   # Show help for all available commands
+   medocker.exe --help
+   
+   # Run the configuration tool in interactive mode
+   medocker.exe configure --interactive
+   
+   # Deploy the Docker stack
+   medocker.exe deploy
    ```
 
-4. For convenience, each package also includes a launcher script:
-   - `Medocker.bat` on Windows
-   - `medocker.sh` on Linux/macOS
+5. For convenience, the package includes a launcher script:
+   - `launcher.bat` on Windows
+   - `launcher.sh` on Linux/macOS
    
-   This launcher provides a simple menu to run any of the tools.
+   This launcher provides a simple menu with the web interface as the default option.
 
 ### For Developers
 
-Standalone executables are built using PyInstaller. To build the executables:
+The standalone executable is built using PyInstaller. To build the executable:
 
 ```bash
 # On Windows
-package.bat
+build.bat
 
 # On Linux/macOS
-chmod +x package.sh
-./package.sh
-```
-
-Or manually:
-
-```bash
-# Install development dependencies
-poetry install --with dev
-
-# Run the build script
-python build.py
+chmod +x build.sh
+./build.sh
 ```
 
 This will create:
-1. Single-file executables in the `dist` directory
-2. A releases directory with all executables and a README
-3. A zip file of all executables (e.g., `medocker-windows.zip`)
+1. A single-file executable in the `dist` directory
+2. A releases directory with the executable and a README
+3. A zip file (e.g., `medocker-windows.zip`)
 
 ## Configuration Options
 
