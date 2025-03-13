@@ -1,0 +1,157 @@
+# Medocker Default Configuration
+
+# System Configuration
+system:
+  domain: localhost
+  ssl_enabled: true
+  admin_email: admin@example.com
+  timezone: UTC
+  data_directory: /data
+
+# Core Components
+components:
+  # OpenEMR Configuration
+  openemr:
+    enabled: true
+    version: 7.0.0
+    port: 8080
+    db_host: mariadb
+    db_name: openemr
+    db_user: openemr
+    db_pass: openemr_password
+
+  # Nextcloud Configuration
+  nextcloud:
+    enabled: true
+    version: 25.0.3
+    port: 8081
+    db_host: mariadb
+    db_name: nextcloud
+    db_user: nextcloud
+    db_pass: nextcloud_password
+    apps:
+      - calendar
+      - tasks
+      - contacts
+      - collabora_online
+      - talk
+
+# Database Services
+databases:
+  # MariaDB Configuration
+  mariadb:
+    enabled: true
+    version: 10.6
+    port: 3306
+    root_password: root_password
+
+# Additional Services
+additional_services:
+  # Medical Device Integration
+  mirth_connect:
+    enabled: false
+    version: 4.0.0
+    port: 8443
+  
+  openhim:
+    enabled: false
+    version: latest
+    port: 8082
+
+  # Security Infrastructure
+  keycloak:
+    enabled: false
+    version: 19.0.1
+    port: 8083
+  
+  vault:
+    enabled: false
+    version: 1.12.0
+    port: 8200
+  
+  wazuh:
+    enabled: false
+    version: 4.3.10
+    port: 55000
+  
+  openvas:
+    enabled: false
+    version: 22.4.0
+    port: 9392
+
+  # Backup and Disaster Recovery
+  duplicati:
+    enabled: false
+    version: latest
+    port: 8200
+    backup_location: /backups
+  
+  minio:
+    enabled: false
+    version: RELEASE.2022-10-08T20-11-00Z
+    port: 9000
+    console_port: 9001
+    access_key: minioadmin
+    secret_key: minioadmin
+
+  # Analytics and Reporting
+  metabase:
+    enabled: false
+    version: v0.44.6
+    port: 3000
+  
+  hapi_fhir:
+    enabled: false
+    version: 6.2.2
+    port: 8084
+
+  # Communication Infrastructure
+  freepbx:
+    enabled: false
+    version: 16
+    ports:
+      - 5060:5060/udp
+      - 5060:5060/tcp
+      - 8001:80
+  
+  mattermost:
+    enabled: false
+    version: 7.5
+    port: 8065
+
+  # Monitoring and Management
+  prometheus:
+    enabled: false
+    version: v2.39.1
+    port: 9090
+  
+  grafana:
+    enabled: false
+    version: 9.2.4
+    port: 3001
+  
+  portainer:
+    enabled: true
+    version: 2.16.2
+    port: 9443
+
+  # PACS and Imaging
+  orthanc:
+    enabled: false
+    version: 1.11.0
+    port: 8042
+
+  # Workflow and Integration
+  n8n:
+    enabled: false
+    version: 0.197.1
+    port: 5678
+  
+  kong:
+    enabled: false
+    version: 3.0.0
+    ports:
+      - 8000:8000
+      - 8443:8443
+      - 8001:8001
+      - 8444:8444 
