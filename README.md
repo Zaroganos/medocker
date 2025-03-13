@@ -138,20 +138,51 @@ This will create platform-specific packages in the project root directory:
 
 ## Standalone Executables
 
-Medocker is distributed as standalone executables for all major platforms, making it easy to use without installing Python or any dependencies. The executables include everything needed to run the application.
+Medocker is distributed as standalone single-file executables for all major platforms, making it easy to use without installing Python or any dependencies.
 
 ### For End Users
 
-Simply download the appropriate package for your platform, extract it, and run the launcher:
+Simply download the appropriate package for your platform:
 
-- **Windows**: Run `Medocker.bat`
-- **Linux/macOS**: Run `./medocker.sh`
+1. Download the appropriate zip file from the [Releases](https://github.com/yourusername/medocker/releases) page:
+   - `medocker-windows.zip` for Windows
+   - `medocker-linux.zip` for Linux
+   - `medocker-macos.zip` for macOS
 
-The launcher provides a simple menu to configure, run the web interface, or deploy your Medocker stack.
+2. Extract the zip file to get the executables:
+   - `medocker.exe` (Windows) or `medocker` (Linux/macOS) - The main CLI application
+   - `medocker-configure.exe` (Windows) or `medocker-configure` (Linux/macOS) - The configuration tool
+   - `medocker-web.exe` (Windows) or `medocker-web` (Linux/macOS) - The web interface
+
+3. Run the executables directly without any installation:
+   ```bash
+   # On Windows:
+   medocker.exe --help
+   
+   # On Linux/macOS:
+   ./medocker --help
+   ```
+
+4. For convenience, each package also includes a launcher script:
+   - `Medocker.bat` on Windows
+   - `medocker.sh` on Linux/macOS
+   
+   This launcher provides a simple menu to run any of the tools.
 
 ### For Developers
 
 Standalone executables are built using PyInstaller. To build the executables:
+
+```bash
+# On Windows
+package.bat
+
+# On Linux/macOS
+chmod +x package.sh
+./package.sh
+```
+
+Or manually:
 
 ```bash
 # Install development dependencies
@@ -161,7 +192,10 @@ poetry install --with dev
 python build.py
 ```
 
-This will create platform-specific packages that can be distributed to end users.
+This will create:
+1. Single-file executables in the `dist` directory
+2. A releases directory with all executables and a README
+3. A zip file of all executables (e.g., `medocker-windows.zip`)
 
 ## Configuration Options
 
