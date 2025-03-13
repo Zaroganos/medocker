@@ -3,7 +3,7 @@
 block_cipher = None
 
 medocker_a = Analysis(
-    ['medocker.py'],
+    ['src/medocker.py'],
     pathex=[],
     binaries=[],
     datas=[
@@ -17,6 +17,7 @@ medocker_a = Analysis(
         'wtforms',
         'yaml',
         'waitress',
+        'web',
     ],
     hookspath=[],
     hooksconfig={},
@@ -29,7 +30,7 @@ medocker_a = Analysis(
 )
 
 configure_a = Analysis(
-    ['configure.py'],
+    ['src/configure.py'],
     pathex=[],
     binaries=[],
     datas=[
@@ -49,7 +50,7 @@ configure_a = Analysis(
 )
 
 web_a = Analysis(
-    ['run_web.py'],
+    ['src/run_web.py'],
     pathex=[],
     binaries=[],
     datas=[
@@ -71,12 +72,6 @@ web_a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
-)
-
-MERGE(
-    (medocker_a, 'medocker', 'medocker'),
-    (configure_a, 'configure', 'configure'),
-    (web_a, 'web_ui', 'web_ui'),
 )
 
 medocker_pyz = PYZ(medocker_a.pure, medocker_a.zipped_data, cipher=block_cipher)
@@ -150,27 +145,4 @@ web_exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-
-# Create the collection
-coll = COLLECT(
-    medocker_exe,
-    medocker_a.binaries,
-    medocker_a.zipfiles,
-    medocker_a.datas,
-    
-    configure_exe,
-    configure_a.binaries,
-    configure_a.zipfiles,
-    configure_a.datas,
-    
-    web_exe,
-    web_a.binaries,
-    web_a.zipfiles,
-    web_a.datas,
-    
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='medocker',
 ) 

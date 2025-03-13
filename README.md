@@ -124,17 +124,18 @@ python medocker.py --help
 To build standalone executables for distribution:
 
 ```bash
-# Install development dependencies
-poetry install --with dev
+# On Windows
+build.bat
 
-# Run the build script
-python build.py
+# On Linux/macOS
+chmod +x scripts/build/package.sh
+./scripts/build/package.sh
 ```
 
 This will create platform-specific packages in the project root directory:
 - `medocker-windows.zip` for Windows
-- `medocker-linux.tar.gz` for Linux
-- `medocker-macos.tar.gz` for macOS
+- `medocker-linux.zip` for Linux
+- `medocker-macos.zip` for macOS
 
 ## Standalone Executables
 
@@ -328,3 +329,53 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 5. Commit your changes (`git commit -m 'Add some amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
+
+## Project Structure
+
+The Medocker project is organized as follows:
+
+```
+medocker/
+├── bin/                # Convenience scripts for common operations
+├── config/             # Configuration templates and defaults
+├── dist/               # Built executables (after running build.bat)
+├── docs/               # Documentation files
+├── releases/           # Release packages (after running build.bat)
+├── scripts/            # Helper scripts
+│   ├── build/          # Build and packaging scripts
+│   ├── dev/            # Development helper scripts
+│   └── launch/         # Executable launcher scripts
+├── src/                # Source code
+│   ├── configure.py    # Configuration tool
+│   ├── medocker.py     # Main CLI entry point
+│   ├── run_web.py      # Web interface entry point
+│   └── web.py          # Web application logic
+├── static/             # Static web assets
+├── templates/          # HTML templates for the web interface
+├── build.bat           # Windows build script shortcut
+├── build.sh            # Linux/macOS build script shortcut
+├── medocker.bat        # Windows CLI shortcut
+├── medocker.sh         # Linux/macOS CLI shortcut
+├── medocker.spec       # PyInstaller specification
+├── pyproject.toml      # Poetry configuration
+└── README.md           # This file
+```
+
+## Development
+
+### Using Poetry for Development
+
+```bash
+# Install development dependencies
+poetry install --with dev
+
+# Run code formatting
+poetry run black .
+poetry run isort .
+
+# Run linting
+poetry run flake8
+
+# Run tests (when implemented)
+poetry run pytest
+```

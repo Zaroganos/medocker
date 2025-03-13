@@ -7,6 +7,7 @@ readme = "README.md"
 license = "MIT"
 repository = "https://github.com/yourusername/medocker"
 keywords = ["docker", "healthcare", "medical", "emr", "keycloak"]
+packages = [{include = "medocker", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -28,9 +29,9 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-medocker = "medocker:main"
-medocker-config = "configure:main"
-medocker-web = "run_web:main"
+medocker = "src.medocker:main"
+medocker-config = "src.configure:main"
+medocker-web = "src.run_web:main"
 
 [tool.black]
 line-length = 88
