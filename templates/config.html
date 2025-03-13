@@ -1,0 +1,496 @@
+{% extends 'base.html' %}
+
+{% block title %}Medocker - Configuration{% endblock %}
+
+{% block sidebar %}
+<div class="nav flex-column">
+    <a class="nav-link" href="#system">
+        <i class="fas fa-cog me-2"></i> System
+    </a>
+    <a class="nav-link" href="#infrastructure">
+        <i class="fas fa-network-wired me-2"></i> Infrastructure
+    </a>
+    <a class="nav-link" href="#databases">
+        <i class="fas fa-database me-2"></i> Databases
+    </a>
+    <a class="nav-link" href="#components">
+        <i class="fas fa-cubes me-2"></i> Components
+    </a>
+    <a class="nav-link" href="#additional-services">
+        <i class="fas fa-plus-circle me-2"></i> Additional Services
+    </a>
+    <hr>
+    <a class="nav-link" href="#deploy">
+        <i class="fas fa-rocket me-2"></i> Deploy
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Medocker Configuration</h2>
+
+<form method="post" action="{{ url_for('config') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- System Configuration -->
+    <div id="system" class="config-section">
+        <h3><i class="fas fa-cog me-2"></i> System Configuration</h3>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="system_domain" class="form-label">Domain Name</label>
+                <input type="text" class="form-control" id="system_domain" name="system_domain" 
+                       value="{{ config.system.domain }}" required>
+                <div class="form-text">The domain name for your Medocker installation (e.g. medocker.example.com)</div>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="system_admin_email" class="form-label">Admin Email</label>
+                <input type="email" class="form-control" id="system_admin_email" name="system_admin_email" 
+                       value="{{ config.system.admin_email }}" required>
+                <div class="form-text">Used for SSL certificates and system notifications</div>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="system_timezone" class="form-label">Timezone</label>
+                <input type="text" class="form-control" id="system_timezone" name="system_timezone" 
+                       value="{{ config.system.timezone }}" required>
+                <div class="form-text">Timezone for all services (e.g. UTC, America/New_York)</div>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="system_data_directory" class="form-label">Data Directory</label>
+                <input type="text" class="form-control" id="system_data_directory" name="system_data_directory" 
+                       value="{{ config.system.data_directory }}" required>
+                <div class="form-text">Directory to store all persistent data (absolute path recommended)</div>
+            </div>
+        </div>
+        
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="system_ssl_enabled" name="system_ssl_enabled" 
+                   {{ 'checked' if config.system.ssl_enabled else '' }} value="true">
+            <label class="form-check-label" for="system_ssl_enabled">Enable SSL</label>
+            <div class="form-text">Automatically obtain and manage SSL certificates with Let's Encrypt</div>
+        </div>
+    </div>
+
+    <!-- Infrastructure Services -->
+    <div id="infrastructure" class="config-section">
+        <h3><i class="fas fa-network-wired me-2"></i> Infrastructure Services</h3>
+        
+        <!-- Traefik -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input toggle-control" type="checkbox" id="infrastructure_traefik_enabled" 
+                           name="infrastructure_traefik_enabled" data-toggle-target="#traefik-config"
+                           {{ 'checked' if config.infrastructure.traefik.enabled else '' }} value="true">
+                    <label class="form-check-label" for="infrastructure_traefik_enabled">
+                        <i class="fas fa-globe me-2"></i> Traefik Reverse Proxy
+                    </label>
+                </div>
+            </div>
+            <div class="card-body" id="traefik-config" style="{{ 'display: none;' if not config.infrastructure.traefik.enabled else '' }}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="infrastructure_traefik_http_port" class="form-label">HTTP Port</label>
+                        <input type="number" class="form-control" id="infrastructure_traefik_http_port" 
+                               name="infrastructure_traefik_http_port" value="{{ config.infrastructure.traefik.http_port }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="infrastructure_traefik_https_port" class="form-label">HTTPS Port</label>
+                        <input type="number" class="form-control" id="infrastructure_traefik_https_port" 
+                               name="infrastructure_traefik_https_port" value="{{ config.infrastructure.traefik.https_port }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="infrastructure_traefik_dashboard_port" class="form-label">Dashboard Port</label>
+                        <input type="number" class="form-control" id="infrastructure_traefik_dashboard_port" 
+                               name="infrastructure_traefik_dashboard_port" value="{{ config.infrastructure.traefik.dashboard_port }}">
+                    </div>
+                </div>
+                <div class="form-text mt-2">
+                    Traefik provides automatic SSL certificates, access control, and load balancing. 
+                    It's highly recommended for production deployments.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Keycloak -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input toggle-control" type="checkbox" id="infrastructure_keycloak_enabled" 
+                           name="infrastructure_keycloak_enabled" data-toggle-target="#keycloak-config"
+                           {{ 'checked' if config.infrastructure.keycloak.enabled else '' }} value="true">
+                    <label class="form-check-label" for="infrastructure_keycloak_enabled">
+                        <i class="fas fa-id-card me-2"></i> Keycloak Identity Provider
+                    </label>
+                </div>
+            </div>
+            <div class="card-body" id="keycloak-config" style="{{ 'display: none;' if not config.infrastructure.keycloak.enabled else '' }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="infrastructure_keycloak_admin_user" class="form-label">Admin Username</label>
+                        <input type="text" class="form-control" id="infrastructure_keycloak_admin_user" 
+                               name="infrastructure_keycloak_admin_user" value="{{ config.infrastructure.keycloak.admin_user }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="infrastructure_keycloak_admin_password" class="form-label">Admin Password</label>
+                        <div class="input-group password-field">
+                            <input type="password" class="form-control" id="infrastructure_keycloak_admin_password" 
+                                   name="infrastructure_keycloak_admin_password" value="{{ config.infrastructure.keycloak.admin_password }}">
+                            <span class="input-group-text"><i class="fas fa-eye toggle-password"></i></span>
+                            <button type="button" class="btn btn-secondary generate-password" 
+                                    data-target="#infrastructure_keycloak_admin_password" data-length="16">
+                                Generate
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="generate_keycloak_password" 
+                                       name="generate_keycloak_password" value="true">
+                                <label class="form-check-label" for="generate_keycloak_password">
+                                    Generate secure password on save
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text">
+                    Keycloak provides centralized authentication for all services. It's highly recommended 
+                    for Single Sign-On capabilities across your medical applications.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Databases -->
+    <div id="databases" class="config-section">
+        <h3><i class="fas fa-database me-2"></i> Database Services</h3>
+        
+        <!-- MariaDB -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input toggle-control" type="checkbox" id="databases_mariadb_enabled" 
+                           name="databases_mariadb_enabled" data-toggle-target="#mariadb-config"
+                           {{ 'checked' if config.databases.mariadb.enabled else '' }} value="true">
+                    <label class="form-check-label" for="databases_mariadb_enabled">
+                        <i class="fas fa-database me-2"></i> MariaDB
+                    </label>
+                </div>
+            </div>
+            <div class="card-body" id="mariadb-config" style="{{ 'display: none;' if not config.databases.mariadb.enabled else '' }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="databases_mariadb_version" class="form-label">Version</label>
+                        <input type="text" class="form-control" id="databases_mariadb_version" 
+                               name="databases_mariadb_version" value="{{ config.databases.mariadb.version }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="databases_mariadb_root_password" class="form-label">Root Password</label>
+                        <div class="input-group password-field">
+                            <input type="password" class="form-control" id="databases_mariadb_root_password" 
+                                   name="databases_mariadb_root_password" value="{{ config.databases.mariadb.root_password }}">
+                            <span class="input-group-text"><i class="fas fa-eye toggle-password"></i></span>
+                            <button type="button" class="btn btn-secondary generate-password" 
+                                    data-target="#databases_mariadb_root_password" data-length="16">
+                                Generate
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="generate_mariadb_password" 
+                                       name="generate_mariadb_password" value="true">
+                                <label class="form-check-label" for="generate_mariadb_password">
+                                    Generate secure password on save
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text">
+                    Required for OpenEMR and Nextcloud. Stores patient records, user data, and application settings.
+                </div>
+            </div>
+        </div>
+        
+        <!-- PostgreSQL -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="databases_postgres_enabled" 
+                           {{ 'checked' if config.databases.postgres.enabled else '' }} disabled>
+                    <label class="form-check-label" for="databases_postgres_enabled">
+                        <i class="fas fa-database me-2"></i> PostgreSQL
+                    </label>
+                    <small class="text-muted">(Required for Keycloak and/or Vaultwarden)</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-text mb-3">
+                    PostgreSQL is automatically enabled when Keycloak or Vaultwarden is activated.
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="generate_postgres_passwords" 
+                           name="generate_postgres_passwords" value="true">
+                    <label class="form-check-label" for="generate_postgres_passwords">
+                        Generate secure passwords for PostgreSQL users on save
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Components -->
+    <div id="components" class="config-section">
+        <h3><i class="fas fa-cubes me-2"></i> Components</h3>
+        
+        <!-- OpenEMR -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input toggle-control" type="checkbox" id="components_openemr_enabled" 
+                           name="components_openemr_enabled" data-toggle-target="#openemr-config"
+                           {{ 'checked' if config.components.openemr.enabled else '' }} value="true">
+                    <label class="form-check-label" for="components_openemr_enabled">
+                        <i class="fas fa-file-medical me-2"></i> OpenEMR
+                    </label>
+                </div>
+            </div>
+            <div class="card-body" id="openemr-config" style="{{ 'display: none;' if not config.components.openemr.enabled else '' }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="components_openemr_version" class="form-label">Version</label>
+                        <input type="text" class="form-control" id="components_openemr_version" 
+                               name="components_openemr_version" value="{{ config.components.openemr.version }}">
+                    </div>
+                    <div class="col-md-6">
+                        {% if not config.infrastructure.traefik.enabled %}
+                        <label for="components_openemr_port" class="form-label">Port</label>
+                        <input type="number" class="form-control" id="components_openemr_port" 
+                               name="components_openemr_port" value="{{ config.components.openemr.port }}">
+                        {% else %}
+                        <div class="alert alert-info mt-2">
+                            <i class="fas fa-info-circle me-2"></i> With Traefik enabled, OpenEMR will be available at:
+                            <strong>https://openemr.{{ config.system.domain }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-text">
+                    OpenEMR is a comprehensive electronic health records and medical practice management application.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nextcloud -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input toggle-control" type="checkbox" id="components_nextcloud_enabled" 
+                           name="components_nextcloud_enabled" data-toggle-target="#nextcloud-config"
+                           {{ 'checked' if config.components.nextcloud.enabled else '' }} value="true">
+                    <label class="form-check-label" for="components_nextcloud_enabled">
+                        <i class="fas fa-cloud me-2"></i> Nextcloud
+                    </label>
+                </div>
+            </div>
+            <div class="card-body" id="nextcloud-config" style="{{ 'display: none;' if not config.components.nextcloud.enabled else '' }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="components_nextcloud_version" class="form-label">Version</label>
+                        <input type="text" class="form-control" id="components_nextcloud_version" 
+                               name="components_nextcloud_version" value="{{ config.components.nextcloud.version }}">
+                    </div>
+                    <div class="col-md-6">
+                        {% if not config.infrastructure.traefik.enabled %}
+                        <label for="components_nextcloud_port" class="form-label">Port</label>
+                        <input type="number" class="form-control" id="components_nextcloud_port" 
+                               name="components_nextcloud_port" value="{{ config.components.nextcloud.port }}">
+                        {% else %}
+                        <div class="alert alert-info mt-2">
+                            <i class="fas fa-info-circle me-2"></i> With Traefik enabled, Nextcloud will be available at:
+                            <strong>https://nextcloud.{{ config.system.domain }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-text">
+                    Secure file sharing, collaboration tools, and document management for medical teams.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vaultwarden -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input toggle-control" type="checkbox" id="components_vaultwarden_enabled" 
+                           name="components_vaultwarden_enabled" data-toggle-target="#vaultwarden-config"
+                           {{ 'checked' if config.components.vaultwarden.enabled else '' }} value="true">
+                    <label class="form-check-label" for="components_vaultwarden_enabled">
+                        <i class="fas fa-key me-2"></i> Vaultwarden (Password Manager)
+                    </label>
+                </div>
+            </div>
+            <div class="card-body" id="vaultwarden-config" style="{{ 'display: none;' if not config.components.vaultwarden.enabled else '' }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="components_vaultwarden_version" class="form-label">Version</label>
+                        <input type="text" class="form-control" id="components_vaultwarden_version" 
+                               name="components_vaultwarden_version" value="{{ config.components.vaultwarden.version }}">
+                    </div>
+                    <div class="col-md-6">
+                        {% if not config.infrastructure.traefik.enabled %}
+                        <label for="components_vaultwarden_port" class="form-label">Port</label>
+                        <input type="number" class="form-control" id="components_vaultwarden_port" 
+                               name="components_vaultwarden_port" value="{{ config.components.vaultwarden.port }}">
+                        {% else %}
+                        <div class="alert alert-info mt-2">
+                            <i class="fas fa-info-circle me-2"></i> With Traefik enabled, Vaultwarden will be available at:
+                            <strong>https://vaultwarden.{{ config.system.domain }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="components_vaultwarden_admin_token" class="form-label">Admin Token</label>
+                        <div class="input-group password-field">
+                            <input type="password" class="form-control" id="components_vaultwarden_admin_token" 
+                                   name="components_vaultwarden_admin_token" value="{{ config.components.vaultwarden.admin_token }}">
+                            <span class="input-group-text"><i class="fas fa-eye toggle-password"></i></span>
+                            <button type="button" class="btn btn-secondary generate-password" 
+                                    data-target="#components_vaultwarden_admin_token" data-length="40">
+                                Generate
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="generate_vaultwarden_token" 
+                                       name="generate_vaultwarden_token" value="true">
+                                <label class="form-check-label" for="generate_vaultwarden_token">
+                                    Generate secure admin token on save
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if config.infrastructure.keycloak.enabled %}
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="components_vaultwarden_sso_enabled" 
+                           name="components_vaultwarden_sso_enabled" 
+                           {{ 'checked' if config.components.vaultwarden.sso_enabled else '' }} value="true">
+                    <label class="form-check-label" for="components_vaultwarden_sso_enabled">
+                        Enable Keycloak SSO Integration
+                    </label>
+                </div>
+                {% endif %}
+                
+                <div class="form-text">
+                    Secure password management solution for storing and sharing credentials in a medical environment.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Services -->
+    <div id="additional-services" class="config-section">
+        <h3><i class="fas fa-plus-circle me-2"></i> Additional Services</h3>
+        
+        <div class="row">
+            {% for service_name, service in config.additional_services.items() %}
+            {% if service is mapping %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="additional_services_{{ service_name }}_enabled" 
+                                   name="additional_services_{{ service_name }}_enabled" 
+                                   {{ 'checked' if service.enabled else '' }} value="true">
+                            <label class="form-check-label" for="additional_services_{{ service_name }}_enabled">
+                                {{ service_name|capitalize }}
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <small class="text-muted">Version: {{ service.version }}</small>
+                        {% if service.port is defined %}
+                        <br>
+                        <small class="text-muted">Port: {{ service.port }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Deploy Section -->
+    <div id="deploy" class="config-section">
+        <h3><i class="fas fa-rocket me-2"></i> Deploy</h3>
+        
+        <div class="d-flex justify-content-between">
+            <div>
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-save me-2"></i> Save Configuration
+                </button>
+                <a href="{{ url_for('download_compose') }}" class="btn btn-secondary me-2">
+                    <i class="fas fa-download me-2"></i> Download docker-compose.yml
+                </a>
+            </div>
+            <button type="button" class="btn btn-success" id="deploy-button">
+                <i class="fas fa-rocket me-2"></i> Deploy Stack
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Deploy button functionality
+    $(document).ready(function() {
+        $('#deploy-button').click(function() {
+            if (confirm('Are you sure you want to deploy the Medocker stack with the current configuration?')) {
+                $.ajax({
+                    url: '/api/deploy',
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Deployment initiated successfully!');
+                            // Redirect to services page after successful deployment
+                            setTimeout(function() {
+                                window.location.href = "{{ url_for('services') }}";
+                            }, 1000);
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Error: Could not connect to server');
+                    }
+                });
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        $('a[href^="#"]').on('click', function(e) {
+            e.preventDefault();
+            var target = $(this.getAttribute('href'));
+            if(target.length) {
+                $('html, body').stop().animate({
+                    scrollTop: target.offset().top - 70
+                }, 500);
+            }
+        });
+    });
+</script>
+{% endblock %} 

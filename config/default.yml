@@ -36,6 +36,24 @@ components:
       - collabora_online
       - talk
 
+  # Vaultwarden Configuration (Password Manager)
+  vaultwarden:
+    enabled: true
+    version: latest
+    port: 8082
+    db_host: postgres
+    db_name: vaultwarden
+    db_user: vaultwarden
+    db_pass: vaultwarden_password
+    admin_token: "change-me-please"
+    smtp_host: ""
+    smtp_port: 587
+    smtp_ssl: true
+    smtp_username: ""
+    smtp_password: ""
+    domain: "vaultwarden.${system.domain}"
+    sso_enabled: true
+
 # Database Services
 databases:
   # MariaDB Configuration
@@ -44,6 +62,48 @@ databases:
     version: 10.6
     port: 3306
     root_password: root_password
+  
+  # PostgreSQL Configuration (for Keycloak and Vaultwarden)
+  postgres:
+    enabled: true
+    version: 14.5
+    port: 5432
+    root_password: postgres_password
+    keycloak_db: keycloak
+    keycloak_user: keycloak
+    keycloak_password: keycloak_password
+    vaultwarden_db: vaultwarden
+    vaultwarden_user: vaultwarden
+    vaultwarden_password: vaultwarden_password
+
+# Infrastructure Services
+infrastructure:
+  # Traefik Reverse Proxy
+  traefik:
+    enabled: true
+    version: v2.9
+    dashboard_port: 8888
+    http_port: 80
+    https_port: 443
+    acme_email: "${system.admin_email}"
+    log_level: INFO # DEBUG, INFO, WARN, ERROR
+    access_logs: true
+    providers:
+      docker: true
+      file: false
+  
+  # Keycloak Identity Provider
+  keycloak:
+    enabled: true
+    version: 21.1.1
+    port: 8083
+    db_host: postgres
+    db_name: keycloak
+    db_user: keycloak
+    db_password: keycloak_password
+    admin_user: admin
+    admin_password: "change-me-please"
+    realm_name: medocker
 
 # Additional Services
 additional_services:
@@ -59,11 +119,6 @@ additional_services:
     port: 8082
 
   # Security Infrastructure
-  keycloak:
-    enabled: false
-    version: 19.0.1
-    port: 8083
-  
   vault:
     enabled: false
     version: 1.12.0

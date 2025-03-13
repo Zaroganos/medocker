@@ -1,0 +1,577 @@
+{% extends 'base.html' %}
+
+{% block title %}Medocker - Services{% endblock %}
+
+{% block sidebar %}
+<div class="nav flex-column">
+    <a class="nav-link" href="#overview">
+        <i class="fas fa-tachometer-alt me-2"></i> Overview
+    </a>
+    <a class="nav-link" href="#infrastructure">
+        <i class="fas fa-network-wired me-2"></i> Infrastructure
+    </a>
+    <a class="nav-link" href="#databases">
+        <i class="fas fa-database me-2"></i> Databases
+    </a>
+    <a class="nav-link" href="#components">
+        <i class="fas fa-cubes me-2"></i> Components
+    </a>
+    <a class="nav-link" href="#additional-services">
+        <i class="fas fa-plus-circle me-2"></i> Additional Services
+    </a>
+    <hr>
+    <a class="nav-link" href="#actions">
+        <i class="fas fa-cogs me-2"></i> Actions
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Medocker Services</h2>
+
+<!-- System Overview -->
+<div id="overview" class="config-section">
+    <h3><i class="fas fa-tachometer-alt me-2"></i> System Overview</h3>
+    
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-server me-2"></i> Services</h5>
+                    <h2 class="display-4" id="services-count">--</h2>
+                    <p>Total Services</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-play-circle me-2"></i> Running</h5>
+                    <h2 class="display-4" id="running-count">--</h2>
+                    <p>Active Services</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-hdd me-2"></i> Storage</h5>
+                    <h2 class="display-4" id="storage-usage">--</h2>
+                    <p>Total Usage</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bell me-2"></i> System Status
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert" id="system-status">
+                        <i class="fas fa-info-circle me-2"></i> Loading system status...
+                    </div>
+                    <div id="status-messages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Infrastructure Services -->
+<div id="infrastructure" class="config-section">
+    <h3><i class="fas fa-network-wired me-2"></i> Infrastructure Services</h3>
+    
+    <div class="row" id="infrastructure-services">
+        <!-- Traefik -->
+        <div class="col-md-6 mb-3 service-card" data-service="traefik">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-globe me-2"></i> Traefik</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Reverse proxy and load balancer with automatic SSL</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>Ports:</strong> HTTP 80, HTTPS 443, Dashboard 8080</p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-sm btn-primary service-access" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> Access
+                        </a>
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Keycloak -->
+        <div class="col-md-6 mb-3 service-card" data-service="keycloak">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-id-card me-2"></i> Keycloak</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Identity and access management with single sign-on</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>URL:</strong> <span class="service-url">--</span></p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-sm btn-primary service-access" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> Access
+                        </a>
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Databases -->
+<div id="databases" class="config-section">
+    <h3><i class="fas fa-database me-2"></i> Database Services</h3>
+    
+    <div class="row" id="database-services">
+        <!-- MariaDB -->
+        <div class="col-md-6 mb-3 service-card" data-service="mariadb">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-database me-2"></i> MariaDB</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Relational database for OpenEMR and Nextcloud</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>Port:</strong> 3306</p>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                        <button class="btn btn-sm btn-info service-backup">
+                            <i class="fas fa-download me-1"></i> Backup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PostgreSQL -->
+        <div class="col-md-6 mb-3 service-card" data-service="postgres">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-database me-2"></i> PostgreSQL</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Relational database for Keycloak and Vaultwarden</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>Port:</strong> 5432</p>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                        <button class="btn btn-sm btn-info service-backup">
+                            <i class="fas fa-download me-1"></i> Backup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Components -->
+<div id="components" class="config-section">
+    <h3><i class="fas fa-cubes me-2"></i> Components</h3>
+    
+    <div class="row" id="component-services">
+        <!-- OpenEMR -->
+        <div class="col-md-4 mb-3 service-card" data-service="openemr">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-file-medical me-2"></i> OpenEMR</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Electronic Health Records System</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>URL:</strong> <span class="service-url">--</span></p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-sm btn-primary service-access" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> Access
+                        </a>
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nextcloud -->
+        <div class="col-md-4 mb-3 service-card" data-service="nextcloud">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-cloud me-2"></i> Nextcloud</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Secure File Storage & Collaboration</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>URL:</strong> <span class="service-url">--</span></p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-sm btn-primary service-access" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> Access
+                        </a>
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vaultwarden -->
+        <div class="col-md-4 mb-3 service-card" data-service="vaultwarden">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-key me-2"></i> Vaultwarden</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Password Management System</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>URL:</strong> <span class="service-url">--</span></p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-sm btn-primary service-access" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> Access
+                        </a>
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Services -->
+<div id="additional-services" class="config-section">
+    <h3><i class="fas fa-plus-circle me-2"></i> Additional Services</h3>
+    
+    <div class="row" id="additional-services-list">
+        <!-- Portainer -->
+        <div class="col-md-4 mb-3 service-card" data-service="portainer">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-th-large me-2"></i> Portainer</span>
+                    <span class="badge bg-secondary service-status">Unknown</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Docker Container Management UI</p>
+                    <div class="service-details">
+                        <p><strong>Version:</strong> <span class="service-version">--</span></p>
+                        <p><strong>URL:</strong> <span class="service-url">--</span></p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-sm btn-primary service-access" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> Access
+                        </a>
+                        <button class="btn btn-sm btn-success service-start">
+                            <i class="fas fa-play me-1"></i> Start
+                        </button>
+                        <button class="btn btn-sm btn-warning service-restart">
+                            <i class="fas fa-sync me-1"></i> Restart
+                        </button>
+                        <button class="btn btn-sm btn-danger service-stop">
+                            <i class="fas fa-stop me-1"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional service cards will be dynamically added here -->
+    </div>
+</div>
+
+<!-- Actions -->
+<div id="actions" class="config-section">
+    <h3><i class="fas fa-cogs me-2"></i> Actions</h3>
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-rocket me-2"></i> Stack Operations
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success mb-2" id="start-all">
+                            <i class="fas fa-play me-2"></i> Start All Services
+                        </button>
+                        <button class="btn btn-warning mb-2" id="restart-all">
+                            <i class="fas fa-sync me-2"></i> Restart All Services
+                        </button>
+                        <button class="btn btn-danger mb-2" id="stop-all">
+                            <i class="fas fa-stop me-2"></i> Stop All Services
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-tools me-2"></i> Maintenance
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-info mb-2" id="backup-all">
+                            <i class="fas fa-download me-2"></i> Backup All Data
+                        </button>
+                        <button class="btn btn-secondary mb-2" id="update-images">
+                            <i class="fas fa-sync-alt me-2"></i> Update Docker Images
+                        </button>
+                        <button class="btn btn-primary mb-2" id="reconfigure">
+                            <i class="fas fa-cogs me-2"></i> Reconfigure Stack
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // For this demo, we'll simulate service statuses
+        function refreshServiceStatus() {
+            // In a real implementation, this would query the server for
+            // actual service statuses via Docker API or similar
+            
+            const services = [
+                'traefik', 'keycloak', 'mariadb', 'postgres', 
+                'openemr', 'nextcloud', 'vaultwarden', 'portainer'
+            ];
+            
+            // Count totals
+            let totalServices = services.length;
+            let runningServices = 0;
+            
+            services.forEach(service => {
+                // Randomly assign statuses for demo
+                const isRunning = Math.random() > 0.3;
+                const status = isRunning ? 'Running' : 'Stopped';
+                const badgeClass = isRunning ? 'bg-success' : 'bg-danger';
+                
+                if (isRunning) runningServices++;
+                
+                // Update service cards
+                $(`.service-card[data-service="${service}"] .service-status`)
+                    .text(status)
+                    .removeClass('bg-secondary bg-success bg-danger')
+                    .addClass(badgeClass);
+                
+                // Toggle buttons based on status
+                $(`.service-card[data-service="${service}"] .service-start`).prop('disabled', isRunning);
+                $(`.service-card[data-service="${service}"] .service-stop`).prop('disabled', !isRunning);
+                $(`.service-card[data-service="${service}"] .service-restart`).prop('disabled', !isRunning);
+                
+                // Add some demo versions
+                const version = service === 'traefik' ? 'v2.9.6' : 
+                               service === 'keycloak' ? '21.1.1' :
+                               service === 'mariadb' ? '10.6.12' :
+                               service === 'postgres' ? '14.5-alpine' :
+                               service === 'openemr' ? '7.0.0' :
+                               service === 'nextcloud' ? '25.0.3' :
+                               service === 'vaultwarden' ? 'latest' :
+                               service === 'portainer' ? '2.16.2' : 'latest';
+                               
+                $(`.service-card[data-service="${service}"] .service-version`).text(version);
+                
+                // Set URLs based on service and domain
+                if (['traefik', 'keycloak', 'openemr', 'nextcloud', 'vaultwarden', 'portainer'].includes(service)) {
+                    const url = `https://${service}.example.com`;
+                    $(`.service-card[data-service="${service}"] .service-url`).text(url);
+                    $(`.service-card[data-service="${service}"] .service-access`).attr('href', url);
+                }
+            });
+            
+            // Update overview counters
+            $('#services-count').text(totalServices);
+            $('#running-count').text(runningServices);
+            $('#storage-usage').text('4.2 GB');
+            
+            // Update system status message
+            if (runningServices === totalServices) {
+                $('#system-status')
+                    .removeClass('alert-info alert-warning alert-danger')
+                    .addClass('alert-success')
+                    .html('<i class="fas fa-check-circle me-2"></i> All services are running properly.');
+            } else if (runningServices > 0) {
+                $('#system-status')
+                    .removeClass('alert-info alert-success alert-danger')
+                    .addClass('alert-warning')
+                    .html(`<i class="fas fa-exclamation-triangle me-2"></i> ${totalServices - runningServices} services are not running.`);
+            } else {
+                $('#system-status')
+                    .removeClass('alert-info alert-warning alert-success')
+                    .addClass('alert-danger')
+                    .html('<i class="fas fa-times-circle me-2"></i> All services are stopped.');
+            }
+        }
+        
+        // Initial status refresh
+        refreshServiceStatus();
+        
+        // Add event handlers for service control buttons
+        $('.service-start, .service-stop, .service-restart, .service-backup').click(function() {
+            const service = $(this).closest('.service-card').data('service');
+            const action = $(this).hasClass('service-start') ? 'start' :
+                          $(this).hasClass('service-stop') ? 'stop' :
+                          $(this).hasClass('service-restart') ? 'restart' : 'backup';
+            
+            // Show a notification
+            const actionText = action.charAt(0).toUpperCase() + action.slice(1);
+            
+            // Add a dynamic status message
+            $('#status-messages').prepend(`
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i> ${actionText}ing ${service}...
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `);
+            
+            // In a real implementation, we would make an AJAX call to the server
+            // For demo, just update UI after a timeout
+            setTimeout(() => {
+                refreshServiceStatus();
+                
+                // Add a completion message
+                $('#status-messages').prepend(`
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> ${service} ${action}ed successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
+            }, 1500);
+        });
+        
+        // Add event handlers for global actions
+        $('#start-all, #stop-all, #restart-all, #backup-all, #update-images, #reconfigure').click(function() {
+            const action = $(this).attr('id');
+            let actionText = '';
+            
+            switch(action) {
+                case 'start-all': actionText = 'Starting all services'; break;
+                case 'stop-all': actionText = 'Stopping all services'; break;
+                case 'restart-all': actionText = 'Restarting all services'; break;
+                case 'backup-all': actionText = 'Backing up all data'; break;
+                case 'update-images': actionText = 'Updating Docker images'; break;
+                case 'reconfigure': 
+                    window.location.href = "{{ url_for('config') }}";
+                    return;
+            }
+            
+            // Add a status message
+            $('#status-messages').prepend(`
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i> ${actionText}...
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `);
+            
+            // For demo, just update UI after a timeout
+            setTimeout(() => {
+                refreshServiceStatus();
+                
+                // Add a completion message
+                $('#status-messages').prepend(`
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> ${actionText} completed successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `);
+            }, 2000);
+        });
+        
+        // Smooth scrolling for anchor links
+        $('a[href^="#"]').on('click', function(e) {
+            e.preventDefault();
+            var target = $(this.getAttribute('href'));
+            if(target.length) {
+                $('html, body').stop().animate({
+                    scrollTop: target.offset().top - 70
+                }, 500);
+            }
+        });
+    });
+</script>
+{% endblock %} 

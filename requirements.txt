@@ -1,2 +1,10 @@
+# DEPRECATED: Please use Poetry for dependency management
+# See pyproject.toml for the current dependencies
+# Run 'poetry install' to install dependencies
+
 PyYAML>=6.0
-pathlib>=1.0.1 
+pathlib>=1.0.1
+flask>=2.2.3
+flask-wtf>=1.1.1
+wtforms>=3.0.1
+waitress>=2.1.2 
