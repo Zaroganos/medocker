@@ -46,12 +46,42 @@ Medocker includes a wide range of software components organized into categories:
 ### Prerequisites
 
 - Docker and Docker Compose installed on your system
-- Python 3.8 or higher
-- Poetry (Python dependency management)
 - Sufficient disk space for the components you plan to enable
 - A domain name (optional, but recommended for production use with Traefik)
 
-### Installation
+### For Users
+
+#### Installation
+
+1. Download the latest Medocker release for your platform from the [Releases](https://github.com/yourusername/medocker/releases) page.
+
+2. Extract the downloaded archive:
+   ```bash
+   # For Windows
+   Extract the medocker-windows.zip file using Windows Explorer
+   
+   # For Linux
+   tar -xzf medocker-linux.tar.gz
+   
+   # For macOS
+   tar -xzf medocker-macos.tar.gz
+   ```
+
+3. Run the Medocker launcher:
+   ```bash
+   # For Windows
+   Double-click on Medocker.bat
+   
+   # For Linux/macOS
+   chmod +x medocker.sh (if needed)
+   ./medocker.sh
+   ```
+
+4. Follow the on-screen instructions to configure and deploy your Medocker stack.
+
+### For Developers
+
+#### Setup Development Environment
 
 1. Clone the repository:
    ```bash
@@ -59,28 +89,7 @@ Medocker includes a wide range of software components organized into categories:
    cd medocker
    ```
 
-2. **Quick Start**:
-   
-   Use our startup scripts to automatically set up Poetry and install dependencies:
-   
-   **For Linux/macOS**:
-   ```bash
-   chmod +x start.sh
-   ./start.sh
-   ```
-   
-   **For Windows**:
-   ```bash
-   start.bat
-   ```
-   
-   This will check if Poetry is installed, install it if needed, and set up all dependencies.
-
-3. **Manual Setup**:
-   
-   If you prefer to set up manually:
-
-   a. Install Poetry if you don't have it already:
+2. Install Poetry if you don't have it already:
    ```bash
    # On Linux, macOS, Windows (WSL)
    curl -sSL https://install.python-poetry.org | python3 -
@@ -89,53 +98,72 @@ Medocker includes a wide range of software components organized into categories:
    (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
    ```
 
-   b. Install dependencies using Poetry:
+3. Install dependencies using Poetry:
    ```bash
    poetry install
    ```
 
-4. Choose one of the following configuration methods:
+#### Development Workflow
 
-   **Option A: Unified CLI**
-   ```bash
-   # Activate the virtual environment
-   poetry shell
-   
-   # Use the Medocker CLI with various subcommands
-   python medocker.py configure --interactive
-   python medocker.py web
-   python medocker.py deploy
-   
-   # Alternative using Poetry scripts
-   poetry run medocker configure --interactive
-   poetry run medocker web
-   poetry run medocker deploy
-   ```
+```bash
+# Activate the virtual environment
+poetry shell
 
-   **Option B: Separate Tools**
-   ```bash
-   # Activate the virtual environment
-   poetry shell
-   
-   # For configuration
-   python configure.py --interactive
-   # or
-   poetry run medocker-config --interactive
-   
-   # For web interface
-   python run_web.py
-   # or
-   poetry run medocker-web
-   ```
+# Run the configuration tool
+python configure.py --interactive
 
-5. Launch the configured stack:
-   ```bash
-   docker-compose up -d
-   # or using the CLI
-   poetry run medocker deploy
-   ```
+# Run the web interface
+python run_web.py
 
-### Configuration Options
+# Use the unified CLI
+python medocker.py --help
+```
+
+#### Building Standalone Executables
+
+To build standalone executables for distribution:
+
+```bash
+# Install development dependencies
+poetry install --with dev
+
+# Run the build script
+python build.py
+```
+
+This will create platform-specific packages in the project root directory:
+- `medocker-windows.zip` for Windows
+- `medocker-linux.tar.gz` for Linux
+- `medocker-macos.tar.gz` for macOS
+
+## Standalone Executables
+
+Medocker is distributed as standalone executables for all major platforms, making it easy to use without installing Python or any dependencies. The executables include everything needed to run the application.
+
+### For End Users
+
+Simply download the appropriate package for your platform, extract it, and run the launcher:
+
+- **Windows**: Run `Medocker.bat`
+- **Linux/macOS**: Run `./medocker.sh`
+
+The launcher provides a simple menu to configure, run the web interface, or deploy your Medocker stack.
+
+### For Developers
+
+Standalone executables are built using PyInstaller. To build the executables:
+
+```bash
+# Install development dependencies
+poetry install --with dev
+
+# Run the build script
+python build.py
+```
+
+This will create platform-specific packages that can be distributed to end users.
+
+## Configuration Options
 
 You can customize your Medocker deployment using these options:
 

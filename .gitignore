@@ -178,3 +178,13 @@ config/custom.yml
 *.swp
 *.swo
 .DS_Store
+
+# PyInstaller
+dist/
+build/
+*.spec
+!medocker.spec
+
+# Distribution packages
+medocker-*.zip
+medocker-*.tar.gz

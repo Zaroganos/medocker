@@ -1,39 +1,57 @@
 @echo off
-rem Medocker Startup Script for Windows
-rem This script helps users get started with Medocker using Poetry
+rem Medocker Launcher for Developers
+rem This script is for development only - end users should use the PyInstaller builds
 
-echo Checking for Poetry installation...
+echo Medocker Development Launcher
+echo ===============================================
 
+rem Check for Python
+where python >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo Python is required but not installed.
+    echo Please install Python 3.8 or higher from https://www.python.org/downloads/
+    pause
+    exit /b 1
+)
+
+rem Check for Poetry
 where poetry >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo Poetry is required but not installed. Please install Poetry using:
+    echo Poetry is required for development.
+    echo To install Poetry, run:
+    echo   pip install poetry
     echo.
-    echo   (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing^).Content ^| python -
-    echo.
-    echo Then run this script again.
+    echo For more information, visit: https://python-poetry.org/docs/#installation
+    pause
     exit /b 1
 )
 
 rem Install dependencies
-echo Installing Medocker dependencies...
+echo Installing development dependencies...
 poetry install
 
-rem Provide usage instructions
 echo.
 echo ===============================================
-echo Medocker has been set up successfully!
+echo Medocker development environment is ready!
 echo ===============================================
 echo.
-echo To start using Medocker, run one of the following commands:
+echo Options:
 echo.
-echo 1. Configure Medocker interactively:
-echo    poetry run medocker configure --interactive
+echo 1. Run configuration tool:
+echo    poetry run python configure.py --interactive
 echo.
-echo 2. Start the web interface:
-echo    poetry run medocker web
+echo 2. Run web interface:
+echo    poetry run python run_web.py
 echo.
-echo 3. Deploy the configured stack:
-echo    poetry run medocker deploy
+echo 3. Run through unified CLI:
+echo    poetry run python medocker.py --help
+echo.
+echo 4. Build standalone executables:
+echo    poetry run python build.py
 echo.
 echo For more information, see the README.md file.
-echo =============================================== 
+echo ===============================================
+
+echo.
+echo Press any key to exit...
+pause > nul 
