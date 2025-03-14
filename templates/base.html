@@ -155,6 +155,16 @@
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <!-- Custom JS -->
     <script>
+        // Set up CSRF token for all AJAX requests
+        const csrfToken = "{{ csrf_token() }}";
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
+                }
+            }
+        });
+        
         // Toggle password visibility
         $(document).on('click', '.toggle-password', function() {
             const passwordField = $(this).closest('.password-field').find('input');
@@ -171,7 +181,7 @@
             $.ajax({
                 url: '/generate_password',
                 type: 'POST',
-                data: {length: length},
+                data: {length: length, csrf_token: csrfToken},
                 success: function(response) {
                     $(targetField).val(response.password);
                     $(targetField).attr('type', 'text');

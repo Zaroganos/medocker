@@ -10,9 +10,11 @@ import sys
 import yaml
 import secrets
 import string
+import tempfile
 from pathlib import Path
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session
 from flask_wtf import CSRFProtect
+from flask_session import Session
 from waitress import serve
 
 # Import functions from configure.py
@@ -32,6 +34,13 @@ from configure import (
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 csrf = CSRFProtect(app)
+
+# Configure Flask-Session
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_FILE_DIR'] = os.path.join(tempfile.gettempdir(), 'medocker_sessions')
+os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
+Session(app)
 
 # Ensure the template and static directories exist
 os.makedirs('templates', exist_ok=True)
@@ -83,14 +92,36 @@ def services():
 @app.route('/generate_password', methods=['POST'])
 def generate_password_route():
     """Generate and return a secure password."""
-    length = int(request.form.get('length', 16))
-    return jsonify({'password': generate_password(length)})
+    try:
+        length = int(request.form.get('length', 16))
+        return jsonify({'password': generate_password(length)})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 
 @app.route('/download_compose')
 def download_compose():
     """Download the generated docker-compose.yml file."""
-    return send_file('docker-compose.yml', as_attachment=True)
+    # Get the absolute path to docker-compose.yml
+    compose_file = os.path.abspath('docker-compose.yml')
+    
+    # Check if the file exists
+    if not os.path.exists(compose_file):
+        # Generate it if it doesn't exist
+        config_file = CUSTOM_CONFIG_FILE if os.path.exists(CUSTOM_CONFIG_FILE) else DEFAULT_CONFIG_FILE
+        config_data = load_config(config_file)
+        generate_docker_compose(config_data, compose_file)
+        
+        # Check again after generation
+        if not os.path.exists(compose_file):
+            flash('Error: Could not generate docker-compose.yml file.', 'error')
+            return redirect(url_for('deploy_page'))
+    
+    try:
+        return send_file(compose_file, as_attachment=True)
+    except Exception as e:
+        flash(f'Error downloading file: {str(e)}', 'error')
+        return redirect(url_for('deploy_page'))
 
 
 @app.route('/api/config', methods=['GET'])
@@ -259,11 +290,28 @@ def download_ansible():
         import zipfile
         from io import BytesIO
         
+        # Check if playbook directory exists
+        playbook_dir = 'playbooks'
+        if not os.path.exists(playbook_dir) or not os.path.isdir(playbook_dir):
+            flash('Ansible playbook directory not found. Please generate the playbook first.', 'error')
+            return redirect(url_for('ansible_page'))
+            
+        # Check if there are files in the directory
+        files_exist = False
+        for _, _, files in os.walk(playbook_dir):
+            if files:
+                files_exist = True
+                break
+                
+        if not files_exist:
+            flash('No Ansible playbook files found. Please generate the playbook first.', 'error')
+            return redirect(url_for('ansible_page'))
+        
+        # Create a zip file in memory
         memory_file = BytesIO()
         
         with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Add all files from the playbook directory
-            playbook_dir = 'playbooks'
             for root, dirs, files in os.walk(playbook_dir):
                 for file in files:
                     file_path = os.path.join(root, file)
