@@ -22,7 +22,10 @@ from configure import (
     generate_password,
     resolve_variable_references,
     generate_docker_compose,
-    create_directories
+    create_directories,
+    deploy_docker_compose_ssh,
+    generate_ansible_playbook,
+    run_ansible_playbook
 )
 
 # Initialize Flask app
@@ -109,47 +112,210 @@ def api_deploy():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
-@app.route('/api/service_status', methods=['GET'])
-def service_status():
-    """Get the status of all services."""
+@app.route('/deploy', methods=['GET', 'POST'])
+def deploy_page():
+    """Render the deployment page and handle deployment requests."""
+    # Load current configuration
+    config_file = CUSTOM_CONFIG_FILE if os.path.exists(CUSTOM_CONFIG_FILE) else DEFAULT_CONFIG_FILE
+    config_data = load_config(config_file)
+    
+    # If this is a POST request, handle the deployment
+    if request.method == 'POST':
+        deployment_type = request.form.get('deployment_type')
+        
+        if deployment_type == 'ssh':
+            # Get SSH parameters
+            host = request.form.get('ssh_host')
+            port = int(request.form.get('ssh_port', 22))
+            username = request.form.get('ssh_username')
+            password = request.form.get('ssh_password') if request.form.get('use_password') == 'true' else None
+            key_path = request.form.get('ssh_key_path') if request.form.get('use_key') == 'true' else None
+            
+            # Validate required fields
+            if not host or not username:
+                flash('Host and username are required for SSH deployment', 'error')
+                return redirect(url_for('deploy_page'))
+            
+            if not password and not key_path:
+                flash('Either password or SSH key is required for SSH deployment', 'error')
+                return redirect(url_for('deploy_page'))
+            
+            # Execute SSH deployment
+            result = deploy_docker_compose_ssh(
+                config_data, 
+                host, 
+                username, 
+                password, 
+                key_path, 
+                port
+            )
+            
+            if result['status'] == 'success':
+                flash(result['message'], 'success')
+            else:
+                flash(result['message'], 'error')
+                
+        elif deployment_type == 'download':
+            # Just generate docker-compose.yml for download
+            # This is handled by the existing download_compose route
+            return redirect(url_for('download_compose'))
+            
+        return redirect(url_for('deploy_page'))
+    
+    return render_template('deploy.html', config=config_data)
+
+
+@app.route('/api/ssh_deploy', methods=['POST'])
+def api_ssh_deploy():
+    """API endpoint for SSH deployment."""
     try:
-        # In a real implementation, you would check Docker service status
-        # For now, return a simulated status
-        services = {
-            'traefik': {'status': 'running', 'version': 'v2.9.6'},
-            'keycloak': {'status': 'running', 'version': '21.1.1'},
-            'postgres': {'status': 'running', 'version': '14.5-alpine'},
-            'mariadb': {'status': 'running', 'version': '10.6.12'},
-            'openemr': {'status': 'running', 'version': '7.0.0'},
-            'nextcloud': {'status': 'running', 'version': '25.0.3'},
-            'vaultwarden': {'status': 'running', 'version': 'latest'},
-            'portainer': {'status': 'running', 'version': '2.16.2'},
-            'rustdesk': {'status': 'stopped', 'version': 'latest'},
-            'fasten-health': {'status': 'stopped', 'version': 'latest'}
-        }
-        return jsonify({'status': 'success', 'services': services})
+        # Get JSON data
+        data = request.json
+        
+        # Load configuration
+        config_file = CUSTOM_CONFIG_FILE if os.path.exists(CUSTOM_CONFIG_FILE) else DEFAULT_CONFIG_FILE
+        config_data = load_config(config_file)
+        
+        # Execute SSH deployment
+        result = deploy_docker_compose_ssh(
+            config_data,
+            data.get('host'),
+            data.get('username'),
+            data.get('password'),
+            data.get('key_path'),
+            data.get('port', 22)
+        )
+        
+        return jsonify(result)
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
-@app.route('/api/service_action', methods=['POST'])
-def service_action():
-    """Perform an action on a service."""
-    try:
-        service = request.json.get('service')
-        action = request.json.get('action')
+@app.route('/ansible', methods=['GET', 'POST'])
+def ansible_page():
+    """Render the Ansible playbook page and handle playbook generation."""
+    # Load current configuration
+    config_file = CUSTOM_CONFIG_FILE if os.path.exists(CUSTOM_CONFIG_FILE) else DEFAULT_CONFIG_FILE
+    config_data = load_config(config_file)
+    
+    # Initialize user_setup if not present
+    if 'user_setup' not in config_data:
+        config_data['user_setup'] = {
+            'client_apps': {},
+            'configure_browser': False
+        }
+    
+    # Handle form submission
+    if request.method == 'POST':
+        action = request.form.get('action')
         
-        if not service or not action:
-            return jsonify({'status': 'error', 'message': 'Service and action are required'}), 400
+        if action == 'generate':
+            # Update configuration with form data
+            config_data['user_setup']['configure_browser'] = request.form.get('configure_browser') == 'true'
             
-        if action not in ['start', 'stop', 'restart']:
-            return jsonify({'status': 'error', 'message': 'Invalid action'}), 400
+            # Update client app settings
+            for component in ['nextcloud', 'vaultwarden', 'rustdesk']:
+                if component in config_data.get('components', {}):
+                    config_data['components'][component]['client_enabled'] = request.form.get(f'{component}_client') == 'true'
             
-        # In a real implementation, you would execute Docker commands
-        # For now, just return success
+            # Save configuration
+            save_config(config_data, CUSTOM_CONFIG_FILE)
+            
+            # Generate Ansible playbook
+            playbook_path = generate_ansible_playbook(config_data)
+            
+            flash(f'Ansible playbook generated successfully at {playbook_path}', 'success')
+            
+            # Prepare download link
+            playbook_dir = os.path.dirname(playbook_path)
+            session['playbook_dir'] = playbook_dir
+            
+            return redirect(url_for('ansible_page'))
+            
+        elif action == 'run':
+            # Run the playbook on localhost
+            inventory_path = os.path.join('playbooks', 'inventory.yml')
+            playbook_path = os.path.join('playbooks', 'medocker-user-setup.yml')
+            
+            result = run_ansible_playbook(playbook_path, inventory_path)
+            
+            if result['status'] == 'success':
+                flash('Ansible playbook executed successfully!', 'success')
+            else:
+                flash(f'Ansible playbook execution failed: {result["message"]}', 'error')
+                
+            return redirect(url_for('ansible_page'))
+    
+    # Check if playbook exists
+    playbook_exists = os.path.exists(os.path.join('playbooks', 'medocker-user-setup.yml'))
+    
+    return render_template('ansible.html', config=config_data, playbook_exists=playbook_exists)
+
+
+@app.route('/download_ansible')
+def download_ansible():
+    """Download the generated Ansible playbook as a zip file."""
+    try:
+        import zipfile
+        from io import BytesIO
+        
+        memory_file = BytesIO()
+        
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            # Add all files from the playbook directory
+            playbook_dir = 'playbooks'
+            for root, dirs, files in os.walk(playbook_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, playbook_dir)
+                    zipf.write(file_path, arcname)
+        
+        # Seek to the beginning of the BytesIO object
+        memory_file.seek(0)
+        
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name='medocker-ansible-playbook.zip'
+        )
+    except Exception as e:
+        flash(f'Error creating Ansible playbook zip: {str(e)}', 'error')
+        return redirect(url_for('ansible_page'))
+
+
+@app.route('/api/generate_ansible', methods=['POST'])
+def api_generate_ansible():
+    """API endpoint for Ansible playbook generation."""
+    try:
+        # Get JSON data
+        data = request.json
+        
+        # Load configuration
+        config_file = CUSTOM_CONFIG_FILE if os.path.exists(CUSTOM_CONFIG_FILE) else DEFAULT_CONFIG_FILE
+        config_data = load_config(config_file)
+        
+        # Update configuration with API data
+        if 'user_setup' in data:
+            config_data['user_setup'] = data['user_setup']
+        
+        # Update client app settings if provided
+        if 'components' in data:
+            for component, settings in data['components'].items():
+                if component in config_data.get('components', {}):
+                    if 'client_enabled' in settings:
+                        config_data['components'][component]['client_enabled'] = settings['client_enabled']
+        
+        # Save configuration
+        save_config(config_data, CUSTOM_CONFIG_FILE)
+        
+        # Generate Ansible playbook
+        playbook_path = generate_ansible_playbook(config_data)
+        
         return jsonify({
-            'status': 'success', 
-            'message': f'{action.capitalize()} operation performed on {service}'
+            'status': 'success',
+            'message': 'Ansible playbook generated successfully',
+            'playbook_path': playbook_path
         })
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500

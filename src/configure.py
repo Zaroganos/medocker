@@ -14,6 +14,13 @@ import argparse
 import secrets
 import string
 from pathlib import Path
+import paramiko
+import socket
+import tempfile
+import ansible_runner
+import jinja2
+import json
+from io import StringIO
 
 
 def load_config(config_file='config/default.yml'):
@@ -769,6 +776,361 @@ def create_directories(config):
             os.makedirs(base_dir / service, exist_ok=True)
     
     print(f"Created directories in {base_dir}")
+
+
+def deploy_docker_compose_ssh(config, host, username, password=None, key_path=None, port=22):
+    """
+    Deploy docker-compose.yml to a remote server via SSH.
+    
+    Args:
+        config: The configuration dictionary
+        host: The hostname or IP of the remote server
+        username: SSH username
+        password: SSH password (optional if using key-based auth)
+        key_path: Path to SSH private key (optional if using password auth)
+        port: SSH port (default: 22)
+        
+    Returns:
+        dict: Result of the deployment with status and message
+    """
+    try:
+        # Generate docker-compose file to a temporary location
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            # Generate docker-compose content to the temp file
+            temp_compose_path = temp_file.name
+            generate_docker_compose(config, temp_compose_path)
+        
+        # Connect to the remote server
+        ssh_client = paramiko.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        
+        # Connect with either password or key
+        if key_path:
+            private_key = paramiko.RSAKey.from_private_key_file(key_path)
+            ssh_client.connect(hostname=host, port=port, username=username, pkey=private_key, timeout=10)
+        else:
+            ssh_client.connect(hostname=host, port=port, username=username, password=password, timeout=10)
+        
+        print(f"Successfully connected to {host}")
+        
+        # Create the destination directory if it doesn't exist
+        remote_dir = config.get('system', {}).get('remote_directory', '/opt/medocker')
+        stdin, stdout, stderr = ssh_client.exec_command(f"mkdir -p {remote_dir}")
+        exit_status = stdout.channel.recv_exit_status()
+        if exit_status != 0:
+            error = stderr.read().decode()
+            raise Exception(f"Failed to create directory: {error}")
+        
+        # Open SFTP connection for file transfer
+        sftp = ssh_client.open_sftp()
+        
+        # Upload the docker-compose.yml file
+        remote_file_path = f"{remote_dir}/docker-compose.yml"
+        sftp.put(temp_compose_path, remote_file_path)
+        print(f"Uploaded docker-compose.yml to {remote_file_path}")
+        
+        # Also upload any required .env or config files based on the configuration
+        # (For example, if using custom configs or environment files)
+        # ... additional file uploads would go here ...
+        
+        # Make sure Docker and docker-compose are installed
+        stdin, stdout, stderr = ssh_client.exec_command("which docker docker-compose || which docker-compose")
+        if stdout.channel.recv_exit_status() != 0:
+            # Docker or docker-compose not installed, attempt to install
+            print("Docker or docker-compose not found, attempting to install...")
+            
+            # Check the distribution
+            stdin, stdout, stderr = ssh_client.exec_command("cat /etc/os-release")
+            os_release = stdout.read().decode()
+            
+            if "ubuntu" in os_release.lower() or "debian" in os_release.lower():
+                # Ubuntu/Debian installation commands
+                installation_commands = [
+                    "sudo apt-get update",
+                    "sudo apt-get install -y docker.io docker-compose",
+                    "sudo systemctl enable docker",
+                    "sudo systemctl start docker",
+                    f"sudo usermod -aG docker {username}"
+                ]
+                
+                for cmd in installation_commands:
+                    stdin, stdout, stderr = ssh_client.exec_command(cmd)
+                    if stdout.channel.recv_exit_status() != 0:
+                        error = stderr.read().decode()
+                        print(f"Warning during installation: {error}")
+            
+            elif "centos" in os_release.lower() or "rhel" in os_release.lower() or "fedora" in os_release.lower():
+                # CentOS/RHEL/Fedora installation commands
+                installation_commands = [
+                    "sudo yum install -y yum-utils",
+                    "sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo",
+                    "sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
+                    "sudo systemctl enable docker",
+                    "sudo systemctl start docker",
+                    f"sudo usermod -aG docker {username}"
+                ]
+                
+                for cmd in installation_commands:
+                    stdin, stdout, stderr = ssh_client.exec_command(cmd)
+                    if stdout.channel.recv_exit_status() != 0:
+                        error = stderr.read().decode()
+                        print(f"Warning during installation: {error}")
+            else:
+                print("Unsupported Linux distribution. Please install Docker and docker-compose manually.")
+        
+        # Deploy the stack
+        stdin, stdout, stderr = ssh_client.exec_command(f"cd {remote_dir} && docker-compose up -d")
+        exit_status = stdout.channel.recv_exit_status()
+        
+        if exit_status != 0:
+            error = stderr.read().decode()
+            raise Exception(f"Failed to deploy Docker stack: {error}")
+        
+        deployment_output = stdout.read().decode()
+        
+        # Close connections
+        sftp.close()
+        ssh_client.close()
+        
+        # Clean up temp file
+        os.unlink(temp_compose_path)
+        
+        return {
+            'status': 'success',
+            'message': f"Successfully deployed to {host}",
+            'output': deployment_output
+        }
+    
+    except socket.timeout:
+        return {
+            'status': 'error',
+            'message': f"Connection timed out while connecting to {host}"
+        }
+    except paramiko.AuthenticationException:
+        return {
+            'status': 'error',
+            'message': f"Authentication failed when connecting to {host}"
+        }
+    except paramiko.SSHException as e:
+        return {
+            'status': 'error',
+            'message': f"SSH error: {str(e)}"
+        }
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': f"Error during deployment: {str(e)}"
+        }
+
+
+def generate_ansible_playbook(config, output_dir='playbooks'):
+    """
+    Generate Ansible playbook for user device setup based on configuration.
+    
+    Args:
+        config: The configuration dictionary
+        output_dir: Directory to save the generated playbook
+        
+    Returns:
+        str: Path to the generated playbook file
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Create a basic playbook structure
+    playbook = {
+        'name': 'Medocker User Setup',
+        'hosts': 'all',
+        'become': True,
+        'tasks': []
+    }
+    
+    # Add common setup tasks
+    playbook['tasks'].extend([
+        {
+            'name': 'Update package cache',
+            'package': {
+                'update_cache': True
+            }
+        },
+        {
+            'name': 'Install required packages',
+            'package': {
+                'name': [
+                    'docker.io',
+                    'docker-compose',
+                    'python3-pip'
+                ],
+                'state': 'present'
+            }
+        },
+        {
+            'name': 'Install required Python packages',
+            'pip': {
+                'name': [
+                    'docker',
+                    'docker-compose'
+                ],
+                'state': 'present'
+            }
+        },
+        {
+            'name': 'Add user to docker group',
+            'user': {
+                'name': '{{ ansible_user }}',
+                'groups': 'docker',
+                'append': True
+            }
+        },
+        {
+            'name': 'Create Medocker directories',
+            'file': {
+                'path': '/opt/medocker-user',
+                'state': 'directory',
+                'mode': '0755'
+            }
+        }
+    ])
+    
+    # Add tasks for client applications based on config
+    if config.get('components', {}).get('nextcloud', {}).get('client_enabled', False):
+        playbook['tasks'].append({
+            'name': 'Install Nextcloud client',
+            'package': {
+                'name': 'nextcloud-desktop',
+                'state': 'present'
+            }
+        })
+    
+    if config.get('components', {}).get('vaultwarden', {}).get('client_enabled', False):
+        playbook['tasks'].append({
+            'name': 'Install Bitwarden client',
+            'package': {
+                'name': 'bitwarden-desktop',
+                'state': 'present'
+            }
+        })
+    
+    if config.get('components', {}).get('rustdesk', {}).get('client_enabled', False):
+        playbook['tasks'].append({
+            'name': 'Download and install RustDesk client',
+            'get_url': {
+                'url': 'https://github.com/rustdesk/rustdesk/releases/latest/download/rustdesk-1.1.9.deb',
+                'dest': '/tmp/rustdesk.deb'
+            }
+        })
+        playbook['tasks'].append({
+            'name': 'Install RustDesk client',
+            'apt': {
+                'deb': '/tmp/rustdesk.deb'
+            }
+        })
+    
+    # Configure browser settings if needed
+    if config.get('user_setup', {}).get('configure_browser', False):
+        playbook['tasks'].append({
+            'name': 'Configure Firefox settings',
+            'template': {
+                'src': 'firefox_prefs.js.j2',
+                'dest': '/etc/firefox/policies/policies.json'
+            }
+        })
+    
+    # Generate the playbook YAML file
+    playbook_path = os.path.join(output_dir, 'medocker-user-setup.yml')
+    with open(playbook_path, 'w') as f:
+        yaml.dump(playbook, f, default_flow_style=False)
+    
+    # Also create an inventory file template
+    inventory_path = os.path.join(output_dir, 'inventory.yml')
+    inventory = {
+        'all': {
+            'hosts': {
+                'localhost': {
+                    'ansible_connection': 'local'
+                }
+            },
+            'vars': {
+                'ansible_python_interpreter': '/usr/bin/python3'
+            }
+        }
+    }
+    
+    with open(inventory_path, 'w') as f:
+        yaml.dump(inventory, f, default_flow_style=False)
+    
+    # Create README with instructions
+    readme_path = os.path.join(output_dir, 'README.md')
+    with open(readme_path, 'w') as f:
+        f.write("""# Medocker User Setup Playbook
+
+This directory contains Ansible playbooks for setting up user workstations.
+
+## Usage
+
+1. Ensure Ansible is installed on your control machine:
+   ```
+   pip install ansible
+   ```
+
+2. Edit the inventory.yml file to include your target hosts
+3. Run the playbook:
+   ```
+   ansible-playbook -i inventory.yml medocker-user-setup.yml
+   ```
+
+For more information, see the Medocker documentation.
+""")
+    
+    return playbook_path
+
+
+def run_ansible_playbook(playbook_path, inventory_path=None, extra_vars=None):
+    """
+    Run an Ansible playbook using ansible-runner.
+    
+    Args:
+        playbook_path: Path to the Ansible playbook
+        inventory_path: Path to inventory file (optional)
+        extra_vars: Dictionary of extra variables (optional)
+        
+    Returns:
+        dict: Result of the Ansible run
+    """
+    try:
+        # Prepare runner parameters
+        runner_params = {
+            'playbook': playbook_path,
+            'quiet': False,
+        }
+        
+        if inventory_path:
+            runner_params['inventory'] = inventory_path
+            
+        if extra_vars:
+            runner_params['extravars'] = extra_vars
+        
+        # Run the playbook
+        result = ansible_runner.run(**runner_params)
+        
+        # Process the result
+        if result.rc == 0:
+            return {
+                'status': 'success',
+                'message': 'Ansible playbook executed successfully',
+                'stats': result.stats
+            }
+        else:
+            return {
+                'status': 'error',
+                'message': f'Ansible playbook execution failed with code {result.rc}',
+                'stats': result.stats
+            }
+    
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': f'Error running Ansible playbook: {str(e)}'
+        }
 
 
 def run_configuration(args):
