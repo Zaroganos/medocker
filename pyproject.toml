@@ -2,11 +2,11 @@
 name = "medocker"
 version = "0.1.0"
 description = "A comprehensive Docker packaging of all the software a medical practice needs"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Iliya Yaroshevskiy <iliya.yaroshevskiy@gmail.com>"]
 readme = "README.md"
-license = "MIT"
-repository = "https://github.com/yourusername/medocker"
-keywords = ["docker", "healthcare", "medical", "emr", "keycloak"]
+license = "GNU Affero GPLv3"
+repository = "https://github.com/Zaroganos/medocker"
+keywords = ["docker", "ansible", "healthcare", "medical", "emr", "keycloak"]
 packages = [{include = "medocker", from = "src"}]
 
 [tool.poetry.dependencies]

@@ -57,7 +57,7 @@ Medocker includes a wide range of software components organized into categories:
 
 #### Installation
 
-1. Download the latest Medocker release for your platform from the [Releases](https://github.com/yourusername/medocker/releases) page.
+1. Download the latest Medocker release for your platform from the [Releases](https://github.com/Zaroganos/medocker/releases) page.
 
 2. Extract the downloaded archive:
    ```bash
@@ -89,7 +89,7 @@ Medocker includes a wide range of software components organized into categories:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/medocker.git
+   git clone https://github.com/Zaroganos/medocker.git
    cd medocker
    ```
 
@@ -149,7 +149,7 @@ Medocker is distributed as a single executable file for all major platforms, mak
 
 Simply download the appropriate package for your platform:
 
-1. Download the appropriate zip file from the [Releases](https://github.com/yourusername/medocker/releases) page:
+1. Download the appropriate zip file from the [Releases](https://github.com/Zaroganos/medocker/releases) page:
    - `medocker-windows.zip` for Windows
    - `medocker-linux.zip` for Linux
    - `medocker-macos.zip` for macOS

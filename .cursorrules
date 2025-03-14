@@ -46,7 +46,7 @@ The goal of Medocker is to enable a clinic to spin up super quickly by launching
 
 ## Security Guidelines
 - Never hardcode credentials
-- Generate secure default passwords
+- Generate secure default passwords, as passphrases
 - Use proper input sanitization
 - Implement appropriate authentication for all services
 - Ensure secure defaults for all services
