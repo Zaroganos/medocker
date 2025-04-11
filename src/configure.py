@@ -17,10 +17,91 @@ from pathlib import Path
 import paramiko
 import socket
 import tempfile
-import ansible_runner
 import jinja2
 import json
 from io import StringIO
+import subprocess
+import platform
+
+# Platform-specific imports
+is_windows = platform.system() == "Windows" or sys.platform == "win32"
+
+try:
+    import ansible_runner
+    have_ansible_runner = True
+except ImportError:
+    # On Windows, create a custom implementation
+    have_ansible_runner = False
+    
+    # Custom Windows-compatible ansible runner
+    class WindowsAnsibleRunner:
+        """Windows-compatible implementation of ansible-runner functionality."""
+        
+        @staticmethod
+        def run(playbook, inventory=None, quiet=False, extravars=None):
+            """Run an Ansible playbook using subprocess."""
+            # Create a result object that mimics ansible_runner.run() result
+            class RunResult:
+                def __init__(self, rc, stdout, stderr):
+                    self.rc = rc
+                    self.stdout = stdout
+                    self.stderr = stderr
+                    self.stats = {}  # Would contain stats from Ansible run
+            
+            # Build the ansible-playbook command
+            cmd = ['ansible-playbook', playbook]
+            if inventory:
+                cmd.extend(['-i', inventory])
+            if extravars:
+                extra_vars_str = json.dumps(extravars)
+                cmd.extend(['--extra-vars', extra_vars_str])
+            
+            # Run the command
+            try:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                stdout, stderr = process.communicate()
+                rc = process.returncode
+                
+                if not quiet:
+                    print(stdout)
+                
+                # Parse output to extract stats if available
+                stats = {}
+                # A more robust implementation would parse Ansible output here
+                
+                return RunResult(rc, stdout, stderr)
+            except FileNotFoundError:
+                # Ansible not installed - try to install it
+                if try_install_ansible_on_windows():
+                    # Try again after installation
+                    process = subprocess.Popen(
+                        cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                    stdout, stderr = process.communicate()
+                    rc = process.returncode
+                    return RunResult(rc, stdout, stderr)
+                else:
+                    # Still couldn't install/run ansible
+                    return RunResult(1, "", "ansible-playbook command not found and automatic installation failed")
+            except Exception as e:
+                return RunResult(1, "", str(e))
+    
+    if is_windows:
+        # Use our Windows-compatible implementation
+        ansible_runner = WindowsAnsibleRunner()
+        print("Using Windows-compatible Ansible runner implementation.")
+    else:
+        # On Unix-like systems, this should be a missing dependency error
+        ansible_runner = None
+        print("Warning: ansible_runner module not available. User setup features will be limited.")
 
 
 def load_config(config_file='config/default.yml'):
@@ -1096,6 +1177,13 @@ def run_ansible_playbook(playbook_path, inventory_path=None, extra_vars=None):
     Returns:
         dict: Result of the Ansible run
     """
+    # Check if ansible_runner is available or if we're using our Windows implementation
+    if ansible_runner is None:
+        return {
+            'status': 'error',
+            'message': 'Ansible runner is not available on this platform. Please install Ansible to use this feature.'
+        }
+        
     try:
         # Prepare runner parameters
         runner_params = {
@@ -1117,13 +1205,14 @@ def run_ansible_playbook(playbook_path, inventory_path=None, extra_vars=None):
             return {
                 'status': 'success',
                 'message': 'Ansible playbook executed successfully',
-                'stats': result.stats
+                'stats': getattr(result, 'stats', {})
             }
         else:
             return {
                 'status': 'error',
                 'message': f'Ansible playbook execution failed with code {result.rc}',
-                'stats': result.stats
+                'stats': getattr(result, 'stats', {}),
+                'stderr': getattr(result, 'stderr', '')
             }
     
     except Exception as e:
@@ -1185,6 +1274,29 @@ def main():
     args = parser.parse_args()
     
     return run_configuration(args)
+
+
+def try_install_ansible_on_windows():
+    """
+    Try to install Ansible on Windows using pip.
+    
+    Returns:
+        bool: True if installation was successful, False otherwise
+    """
+    if not is_windows:
+        return False
+        
+    try:
+        print("Ansible not found. Attempting to install it automatically...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "ansible"])
+        print("Ansible installed successfully!")
+        return True
+    except subprocess.CalledProcessError:
+        print("Failed to install Ansible automatically.")
+        print("Please install it manually:")
+        print("  pip install ansible")
+        print("Or visit: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html")
+        return False
 
 
 if __name__ == '__main__':

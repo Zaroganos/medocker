@@ -1,34 +1,23 @@
 @echo off
-echo Medocker 0.1.0 Launcher
+===============================================
+            Medocker Launcher
+===============================================
+
+REM Change to the directory where the launcher.bat is located
+cd /d "%~dp0"
+
+echo Starting Medocker from %CD%...
 echo.
-echo 1. Start Web Interface (default)
-echo 2. Configure Medocker
-echo 3. Deploy Docker Stack
-echo 4. Exit
+echo If a browser window doesn't open automatically, 
+echo please visit: http://localhost:5000
 echo.
-set /p choice=Enter your choice (1-4) or press Enter for Web Interface: 
+echo Press Ctrl+C to stop the server when finished.
+echo.
 
-if "%choice%"=="" (
-    medocker.exe
-    goto end
-)
-if "%choice%"=="1" (
-    medocker.exe
-    goto end
-)
-if "%choice%"=="2" (
-    medocker.exe configure --interactive
-    goto end
-)
-if "%choice%"=="3" (
-    medocker.exe deploy
-    goto end
-)
-if "%choice%"=="4" (
-    exit /b
-)
+REM Run the executable
+medocker.exe
 
-echo Invalid choice, please try again.
-
-:end
+REM This will only execute if the executable quits
+echo.
+echo Medocker has exited with code: %ERRORLEVEL%
 pause

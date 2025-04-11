@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Medocker - Medical Docker Stack{% endblock %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <i class="fas fa-medkit fa-4x mb-4 text-primary"></i>
+    <h1 class="display-5 fw-bold">Medocker</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">
+            A comprehensive Docker-based stack for medical applications, designed to deploy integrated healthcare services with secure authentication, data storage, and collaboration tools.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('config') }}" class="btn btn-primary btn-lg px-4 gap-3">
+                <i class="fas fa-cogs me-2"></i> Configure
+            </a>
+            <a href="{{ url_for('services') }}" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="fas fa-server me-2"></i> Manage Services
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card component-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-medical fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Electronic Health Records</h5>
+                    <p class="card-text">
+                        Deploy OpenEMR for comprehensive electronic health records management, scheduling, and billing.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card component-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-cloud fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Secure File Storage</h5>
+                    <p class="card-text">
+                        Share files securely with Nextcloud, with built-in collaboration and document management.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card component-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-key fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Password Management</h5>
+                    <p class="card-text">
+                        Manage credentials securely with Vaultwarden, integrated with single sign-on for seamless access.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card component-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Identity Management</h5>
+                    <p class="card-text">
+                        Centralized authentication with Keycloak for single sign-on across all services.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card component-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-network-wired fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Reverse Proxy</h5>
+                    <p class="card-text">
+                        Secure access with Traefik, automatic SSL certificates, and load balancing capabilities.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card component-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-database fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Database Services</h5>
+                    <p class="card-text">
+                        Reliable data storage with MariaDB and PostgreSQL for all your applications.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h3 class="mb-4">Getting Started</h3>
+            <div class="card">
+                <div class="card-body">
+                    <ol class="text-start">
+                        <li>Configure your desired services in the <a href="{{ url_for('config') }}">Configuration</a> page</li>
+                        <li>Review and save your configuration</li>
+                        <li>Deploy your services using Docker Compose</li>
+                        <li>Monitor and manage your services from the <a href="{{ url_for('services') }}">Services</a> page</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

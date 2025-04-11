@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Medocker User Setup{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Medocker User Device Setup</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Configure User Workstation</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Configure and generate an Ansible playbook to set up user workstations. This will install
+                        and configure the necessary client applications for your Medocker environment.
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('ansible_page') }}">
+                        <input type="hidden" name="action" value="generate">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-4">
+                            <h5>Client Applications</h5>
+                            
+                            {% if config.components.nextcloud is defined %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="true" name="nextcloud_client" id="nextcloud_client" 
+                                    {% if config.components.nextcloud.client_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="nextcloud_client">
+                                    Nextcloud Client
+                                </label>
+                                <small class="text-muted d-block">Sync files with your Nextcloud server</small>
+                            </div>
+                            {% endif %}
+                            
+                            {% if config.components.vaultwarden is defined %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="true" name="vaultwarden_client" id="vaultwarden_client"
+                                    {% if config.components.vaultwarden.client_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="vaultwarden_client">
+                                    Bitwarden Client (for Vaultwarden)
+                                </label>
+                                <small class="text-muted d-block">Password manager client that connects to your Vaultwarden server</small>
+                            </div>
+                            {% endif %}
+                            
+                            {% if config.components.rustdesk is defined %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="true" name="rustdesk_client" id="rustdesk_client"
+                                    {% if config.components.rustdesk.client_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="rustdesk_client">
+                                    RustDesk Client
+                                </label>
+                                <small class="text-muted d-block">Remote access client for IT support</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Browser Configuration</h5>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="true" name="configure_browser" id="configure_browser"
+                                    {% if config.user_setup.configure_browser %}checked{% endif %}>
+                                <label class="form-check-label" for="configure_browser">
+                                    Configure Web Browser
+                                </label>
+                                <small class="text-muted d-block">Set up browser with Medocker server bookmarks and settings</small>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Generate Ansible Playbook</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if playbook_exists %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Deployment Options</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Your Ansible playbook has been generated. You can now deploy it to user workstations.
+                    </p>
+                    
+                    <div class="d-flex gap-3">
+                        <a href="{{ url_for('download_ansible') }}" class="btn btn-primary">Download Playbook</a>
+                        
+                        <form method="POST" action="{{ url_for('ansible_page') }}" class="d-inline">
+                            <input type="hidden" name="action" value="run">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success">Run on This Workstation</button>
+                        </form>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Manual Deployment Instructions</h6>
+                        <ol>
+                            <li>Download the Ansible playbook package</li>
+                            <li>Extract it to a directory on your control machine</li>
+                            <li>Edit the inventory.yml file to include the target hosts</li>
+                            <li>Run the playbook using: <code>ansible-playbook -i inventory.yml medocker-user-setup.yml</code></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Status Card -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Status</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% else %}
+                                <div>No actions have been performed yet.</div>
+                            {% endif %}
+                        {% endwith %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -57,6 +57,8 @@ Medocker includes a wide range of software components organized into categories:
 
 #### Installation
 
+0. Prerelease: If there is no release, or new recent release, skip to "For Developers" below this section.
+
 1. Download the latest Medocker release for your platform from the [Releases](https://github.com/Zaroganos/medocker/releases) page.
 
 2. Extract the downloaded archive:

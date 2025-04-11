@@ -11,6 +11,7 @@ import yaml
 import secrets
 import string
 import tempfile
+import json
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session
 from flask_wtf import CSRFProtect
@@ -31,7 +32,14 @@ from configure import (
 )
 
 # Initialize Flask app
-app = Flask(__name__)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+templates_dir = os.path.join(project_root, 'templates')
+static_dir = os.path.join(project_root, 'static')
+
+app = Flask(__name__, 
+           template_folder=templates_dir,
+           static_folder=static_dir)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 csrf = CSRFProtect(app)
 
@@ -43,12 +51,12 @@ os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 Session(app)
 
 # Ensure the template and static directories exist
-os.makedirs('templates', exist_ok=True)
-os.makedirs('static', exist_ok=True)
+os.makedirs(templates_dir, exist_ok=True)
+os.makedirs(static_dir, exist_ok=True)
 
 # Default configuration file
-DEFAULT_CONFIG_FILE = 'config/default.yml'
-CUSTOM_CONFIG_FILE = 'config/custom.yml'
+DEFAULT_CONFIG_FILE = os.path.join(project_root, 'config/default.yml')
+CUSTOM_CONFIG_FILE = os.path.join(project_root, 'config/custom.yml')
 
 
 @app.route('/')
@@ -367,6 +375,102 @@ def api_generate_ansible():
         })
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/cart')
+def cart_page():
+    """Render the service cart page."""
+    return render_template('cart.html')
+
+
+@app.route('/api/service_catalog', methods=['GET'])
+def api_service_catalog():
+    """Return the service catalog data."""
+    try:
+        catalog_file = os.path.join(project_root, 'data/service_catalog.json')
+        if os.path.exists(catalog_file):
+            with open(catalog_file, 'r') as f:
+                catalog = json.load(f)
+            return jsonify(catalog)
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Service catalog file not found'
+            }), 404
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/generate_from_cart', methods=['POST'])
+def api_generate_from_cart():
+    """Generate docker-compose configuration from cart contents."""
+    try:
+        # Get cart items from request
+        data = request.json
+        cart_items = data.get('cart', [])
+        
+        if not cart_items:
+            return jsonify({
+                'status': 'error',
+                'message': 'Cart is empty'
+            }), 400
+        
+        # Load current configuration
+        config_file = CUSTOM_CONFIG_FILE if os.path.exists(CUSTOM_CONFIG_FILE) else DEFAULT_CONFIG_FILE
+        config_data = load_config(config_file)
+        
+        # Load service catalog
+        catalog_file = os.path.join(project_root, 'data/service_catalog.json')
+        with open(catalog_file, 'r') as f:
+            catalog = json.load(f)
+        
+        # Update configuration based on cart items
+        for item in cart_items:
+            service_id = item.get('id')
+            service_type = item.get('type')
+            
+            if service_type == 'docker':
+                # Find service in catalog
+                service = next((s for s in catalog['docker_services'] if s['id'] == service_id), None)
+                if service:
+                    # Enable the service in configuration
+                    if service_id in config_data.get('components', {}):
+                        config_data['components'][service_id]['enabled'] = True
+                    elif service_id in config_data.get('infrastructure', {}):
+                        config_data['infrastructure'][service_id]['enabled'] = True
+                    elif service_id in config_data.get('databases', {}):
+                        config_data['databases'][service_id]['enabled'] = True
+                    elif service_id in config_data.get('additional_services', {}):
+                        config_data['additional_services'][service_id]['enabled'] = True
+            elif service_type == 'ai':
+                # Handle AI services
+                # For now, just keep track of them in the cart
+                if 'ai_services' not in config_data:
+                    config_data['ai_services'] = {}
+                config_data['ai_services'][service_id] = {
+                    'enabled': True,
+                    'api_key': '',  # Will be filled by user later
+                    'local': True if 'local' in item.get('tags', []) else False
+                }
+        
+        # Save updated configuration
+        save_config(config_data, CUSTOM_CONFIG_FILE)
+        
+        # Generate docker-compose file
+        generate_docker_compose(config_data, 'docker-compose.yml')
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Configuration generated successfully'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 
 
 def update_config_from_form(config, form_data):

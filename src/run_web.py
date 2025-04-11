@@ -11,7 +11,44 @@ import argparse
 import webbrowser
 import threading
 import time
-from web import app, main as web_main
+import platform
+
+# Add some platform-specific handling for Windows
+is_windows = platform.system() == "Windows" or sys.platform == "win32"
+
+# Then import the web module
+try:
+    from web import app, main as web_main
+except ImportError as e:
+    if is_windows and "fcntl" in str(e):
+        print("Notice: Some Unix-specific modules are not available on Windows.")
+        print("We will use alternative implementations for Windows compatibility.")
+        print("All core features should still work.")
+        
+        # Try to patch the specific modules before importing again
+        try:
+            # Create a mock fcntl module for Windows
+            import types
+            fcntl_mock = types.ModuleType('fcntl')
+            fcntl_mock.LOCK_EX = 1
+            fcntl_mock.LOCK_NB = 2
+            fcntl_mock.LOCK_UN = 4
+            
+            def fcntl_mock_flock(fd, operation):
+                # This is a no-op on Windows
+                pass
+                
+            fcntl_mock.flock = fcntl_mock_flock
+            sys.modules['fcntl'] = fcntl_mock
+            
+            # Now try importing again
+            from web import app, main as web_main
+        except ImportError as e2:
+            print(f"Error: Could not initialize the web interface: {e2}")
+            sys.exit(1)
+    else:
+        print(f"Error: {e}")
+        sys.exit(1)
 
 def open_browser(url, delay=1.0):
     """Open a web browser after a short delay to allow the server to start."""

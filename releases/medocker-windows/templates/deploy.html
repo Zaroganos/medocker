@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Deploy Medocker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Deploy Medocker Stack</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Deployment Options</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Choose one of the deployment methods below to deploy your Medocker stack.
+                    </p>
+                    
+                    <div class="d-flex justify-content-start mb-4">
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="deploymentOption" id="option1" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="option1">SSH Deployment</label>
+                            
+                            <input type="radio" class="btn-check" name="deploymentOption" id="option2" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="option2">Download Files</label>
+                        </div>
+                    </div>
+                    
+                    <!-- SSH Deployment Form -->
+                    <div id="sshDeployment" class="deployment-option">
+                        <form method="POST" action="{{ url_for('deploy_page') }}">
+                            <input type="hidden" name="deployment_type" value="ssh">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="ssh_host" class="form-label">Host</label>
+                                        <input type="text" class="form-control" id="ssh_host" name="ssh_host" placeholder="example.com or IP address" required>
+                                    </div>
+                                    
+                                    <div class="form-group mb-3">
+                                        <label for="ssh_port" class="form-label">Port</label>
+                                        <input type="number" class="form-control" id="ssh_port" name="ssh_port" value="22">
+                                    </div>
+                                    
+                                    <div class="form-group mb-3">
+                                        <label for="ssh_username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="ssh_username" name="ssh_username" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Authentication Method</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="auth_method" id="auth_password" value="password" checked>
+                                            <label class="form-check-label" for="auth_password">
+                                                Password
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="auth_method" id="auth_key" value="key">
+                                            <label class="form-check-label" for="auth_key">
+                                                SSH Key
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="passwordAuth" class="auth-option">
+                                        <div class="form-group mb-3">
+                                            <label for="ssh_password" class="form-label">Password</label>
+                                            <input type="password" class="form-control" id="ssh_password" name="ssh_password">
+                                            <input type="hidden" name="use_password" value="true">
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="keyAuth" class="auth-option d-none">
+                                        <div class="form-group mb-3">
+                                            <label for="ssh_key_path" class="form-label">SSH Key Path</label>
+                                            <input type="text" class="form-control" id="ssh_key_path" name="ssh_key_path" placeholder="~/.ssh/id_rsa">
+                                            <input type="hidden" name="use_key" value="false">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Deploy via SSH</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Download Option -->
+                    <div id="downloadDeployment" class="deployment-option d-none">
+                        <form method="POST" action="{{ url_for('deploy_page') }}">
+                            <input type="hidden" name="deployment_type" value="download">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <p>Download the docker-compose.yml file and related configuration files to deploy manually on your server.</p>
+                            
+                            <a href="{{ url_for('download_compose') }}" class="btn btn-primary">Download Docker Compose</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Deployment Status Card -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Deployment Status</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% else %}
+                                <div>No deployment has been initiated yet.</div>
+                            {% endif %}
+                        {% endwith %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle deployment option selection
+    const option1 = document.getElementById('option1');
+    const option2 = document.getElementById('option2');
+    const sshDeployment = document.getElementById('sshDeployment');
+    const downloadDeployment = document.getElementById('downloadDeployment');
+    
+    option1.addEventListener('change', function() {
+        if (this.checked) {
+            sshDeployment.classList.remove('d-none');
+            downloadDeployment.classList.add('d-none');
+        }
+    });
+    
+    option2.addEventListener('change', function() {
+        if (this.checked) {
+            sshDeployment.classList.add('d-none');
+            downloadDeployment.classList.remove('d-none');
+        }
+    });
+    
+    // Handle authentication method selection
+    const authPassword = document.getElementById('auth_password');
+    const authKey = document.getElementById('auth_key');
+    const passwordAuth = document.getElementById('passwordAuth');
+    const keyAuth = document.getElementById('keyAuth');
+    const usePassword = document.querySelector('input[name="use_password"]');
+    const useKey = document.querySelector('input[name="use_key"]');
+    
+    authPassword.addEventListener('change', function() {
+        if (this.checked) {
+            passwordAuth.classList.remove('d-none');
+            keyAuth.classList.add('d-none');
+            usePassword.value = 'true';
+            useKey.value = 'false';
+        }
+    });
+    
+    authKey.addEventListener('change', function() {
+        if (this.checked) {
+            passwordAuth.classList.add('d-none');
+            keyAuth.classList.remove('d-none');
+            usePassword.value = 'false';
+            useKey.value = 'true';
+        }
+    });
+});
+</script>
+{% endblock %} 

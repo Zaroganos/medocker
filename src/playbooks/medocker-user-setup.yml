@@ -1,0 +1,42 @@
+become: true
+hosts: all
+name: Medocker User Setup
+tasks:
+- name: Update package cache
+  package:
+    update_cache: true
+- name: Install required packages
+  package:
+    name:
+    - docker.io
+    - docker-compose
+    - python3-pip
+    state: present
+- name: Install required Python packages
+  pip:
+    name:
+    - docker
+    - docker-compose
+    state: present
+- name: Add user to docker group
+  user:
+    append: true
+    groups: docker
+    name: '{{ ansible_user }}'
+- file:
+    mode: '0755'
+    path: /opt/medocker-user
+    state: directory
+  name: Create Medocker directories
+- name: Install Nextcloud client
+  package:
+    name: nextcloud-desktop
+    state: present
+- name: Install Bitwarden client
+  package:
+    name: bitwarden-desktop
+    state: present
+- name: Configure Firefox settings
+  template:
+    dest: /etc/firefox/policies/policies.json
+    src: firefox_prefs.js.j2

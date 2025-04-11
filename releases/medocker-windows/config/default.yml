@@ -1,0 +1,229 @@
+# Medocker Default Configuration
+
+# System Configuration
+system:
+  domain: localhost
+  ssl_enabled: true
+  admin_email: admin@example.com
+  timezone: UTC
+  data_directory: /data
+
+# Core Components
+components:
+  # OpenEMR Configuration
+  openemr:
+    enabled: true
+    version: 7.0.0
+    port: 8080
+    db_host: mariadb
+    db_name: openemr
+    db_user: openemr
+    db_pass: openemr_password
+
+  # Nextcloud Configuration
+  nextcloud:
+    enabled: true
+    version: 25.0.3
+    port: 8081
+    db_host: mariadb
+    db_name: nextcloud
+    db_user: nextcloud
+    db_pass: nextcloud_password
+    apps:
+      - calendar
+      - tasks
+      - contacts
+      - collabora_online
+      - talk
+
+  # Vaultwarden Configuration (Password Manager)
+  vaultwarden:
+    enabled: true
+    version: latest
+    port: 8082
+    db_host: postgres
+    db_name: vaultwarden
+    db_user: vaultwarden
+    db_pass: vaultwarden_password
+    admin_token: "change-me-please"
+    smtp_host: ""
+    smtp_port: 587
+    smtp_ssl: true
+    smtp_username: ""
+    smtp_password: ""
+    domain: "vaultwarden.${system.domain}"
+    sso_enabled: true
+
+# Database Services
+databases:
+  # MariaDB Configuration
+  mariadb:
+    enabled: true
+    version: 10.6
+    port: 3306
+    root_password: root_password
+  
+  # PostgreSQL Configuration (for Keycloak and Vaultwarden)
+  postgres:
+    enabled: true
+    version: 14.5
+    port: 5432
+    root_password: postgres_password
+    keycloak_db: keycloak
+    keycloak_user: keycloak
+    keycloak_password: keycloak_password
+    vaultwarden_db: vaultwarden
+    vaultwarden_user: vaultwarden
+    vaultwarden_password: vaultwarden_password
+
+# Infrastructure Services
+infrastructure:
+  # Traefik Reverse Proxy
+  traefik:
+    enabled: true
+    version: v2.9
+    dashboard_port: 8888
+    http_port: 80
+    https_port: 443
+    acme_email: "${system.admin_email}"
+    log_level: INFO # DEBUG, INFO, WARN, ERROR
+    access_logs: true
+    providers:
+      docker: true
+      file: false
+  
+  # Keycloak Identity Provider
+  keycloak:
+    enabled: true
+    version: 21.1.1
+    port: 8083
+    db_host: postgres
+    db_name: keycloak
+    db_user: keycloak
+    db_password: keycloak_password
+    admin_user: admin
+    admin_password: "change-me-please"
+    realm_name: medocker
+
+# Additional Services
+additional_services:
+  # Medical Device Integration
+  mirth_connect:
+    enabled: false
+    version: 4.0.0
+    port: 8443
+  
+  openhim:
+    enabled: false
+    version: latest
+    port: 8082
+
+  # Security Infrastructure
+  vault:
+    enabled: false
+    version: 1.12.0
+    port: 8200
+  
+  wazuh:
+    enabled: false
+    version: 4.3.10
+    port: 55000
+  
+  openvas:
+    enabled: false
+    version: 22.4.0
+    port: 9392
+
+  # Backup and Disaster Recovery
+  duplicati:
+    enabled: false
+    version: latest
+    port: 8200
+    backup_location: /backups
+  
+  minio:
+    enabled: false
+    version: RELEASE.2022-10-08T20-11-00Z
+    port: 9000
+    console_port: 9001
+    access_key: minioadmin
+    secret_key: minioadmin
+
+  # Analytics and Reporting
+  metabase:
+    enabled: false
+    version: v0.44.6
+    port: 3000
+  
+  hapi_fhir:
+    enabled: false
+    version: 6.2.2
+    port: 8084
+
+  # Communication Infrastructure
+  freepbx:
+    enabled: false
+    version: 16
+    ports:
+      - 5060:5060/udp
+      - 5060:5060/tcp
+      - 8001:80
+  
+  mattermost:
+    enabled: false
+    version: 7.5
+    port: 8065
+
+  # Remote Access
+  rustdesk:
+    enabled: false
+    version: latest
+    hbbs_port: 21115
+    hbbr_port: 21116
+    relay_port: 21117
+    web_port: 8080
+    key_base: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+  
+  # Patient Health Record Access
+  fasten_health:
+    enabled: false
+    version: latest
+    port: 8090
+    host: 0.0.0.0
+
+  # Monitoring and Management
+  prometheus:
+    enabled: false
+    version: v2.39.1
+    port: 9090
+  
+  grafana:
+    enabled: false
+    version: 9.2.4
+    port: 3001
+  
+  portainer:
+    enabled: true
+    version: 2.16.2
+    port: 9443
+
+  # PACS and Imaging
+  orthanc:
+    enabled: false
+    version: 1.11.0
+    port: 8042
+
+  # Workflow and Integration
+  n8n:
+    enabled: false
+    version: 0.197.1
+    port: 5678
+  
+  kong:
+    enabled: false
+    version: 3.0.0
+    ports:
+      - 8000:8000
+      - 8443:8443
+      - 8001:8001
+      - 8444:8444 

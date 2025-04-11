@@ -1,0 +1,184 @@
+additional_services:
+  duplicati:
+    backup_location: /backups
+    enabled: false
+    port: 8200
+    version: latest
+  fasten_health:
+    enabled: false
+    host: 0.0.0.0
+    port: 8090
+    version: latest
+  freepbx:
+    enabled: false
+    ports:
+    - 5060:5060/udp
+    - 5060:5060/tcp
+    - 8001:80
+    version: 16
+  grafana:
+    enabled: false
+    port: 3001
+    version: 9.2.4
+  hapi_fhir:
+    enabled: false
+    port: 8084
+    version: 6.2.2
+  kong:
+    enabled: false
+    ports:
+    - 8000:8000
+    - 8443:8443
+    - 8001:8001
+    - 8444:8444
+    version: 3.0.0
+  mattermost:
+    enabled: false
+    port: 8065
+    version: 7.5
+  metabase:
+    enabled: false
+    port: 3000
+    version: v0.44.6
+  minio:
+    access_key: minioadmin
+    console_port: 9001
+    enabled: false
+    port: 9000
+    secret_key: minioadmin
+    version: RELEASE.2022-10-08T20-11-00Z
+  mirth_connect:
+    enabled: false
+    port: 8443
+    version: 4.0.0
+  n8n:
+    enabled: false
+    port: 5678
+    version: 0.197.1
+  openhim:
+    enabled: false
+    port: 8082
+    version: latest
+  openvas:
+    enabled: false
+    port: 9392
+    version: 22.4.0
+  orthanc:
+    enabled: false
+    port: 8042
+    version: 1.11.0
+  portainer:
+    enabled: true
+    port: 9443
+    version: 2.16.2
+  prometheus:
+    enabled: false
+    port: 9090
+    version: v2.39.1
+  rustdesk:
+    enabled: false
+    hbbr_port: 21116
+    hbbs_port: 21115
+    key_base: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
+    relay_port: 21117
+    version: latest
+    web_port: 8080
+  vault:
+    enabled: false
+    port: 8200
+    version: 1.12.0
+  wazuh:
+    enabled: false
+    port: 55000
+    version: 4.3.10
+components:
+  nextcloud:
+    apps:
+    - calendar
+    - tasks
+    - contacts
+    - collabora_online
+    - talk
+    client_enabled: true
+    db_host: mariadb
+    db_name: nextcloud
+    db_pass: nextcloud_password
+    db_user: nextcloud
+    enabled: true
+    port: 8081
+    version: 25.0.3
+  openemr:
+    db_host: mariadb
+    db_name: openemr
+    db_pass: openemr_password
+    db_user: openemr
+    enabled: true
+    port: 8080
+    version: 7.0.0
+  vaultwarden:
+    admin_token: change-me-please
+    client_enabled: true
+    db_host: postgres
+    db_name: vaultwarden
+    db_pass: vaultwarden_password
+    db_user: vaultwarden
+    domain: vaultwarden.${system.domain}
+    enabled: true
+    port: 8082
+    smtp_host: ''
+    smtp_password: ''
+    smtp_port: 587
+    smtp_ssl: true
+    smtp_username: ''
+    sso_enabled: true
+    version: latest
+databases:
+  mariadb:
+    enabled: true
+    port: 3306
+    root_password: root_password
+    version: 10.6
+  postgres:
+    enabled: true
+    keycloak_db: keycloak
+    keycloak_password: keycloak_password
+    keycloak_user: keycloak
+    port: 5432
+    root_password: postgres_password
+    vaultwarden_db: vaultwarden
+    vaultwarden_password: vaultwarden_password
+    vaultwarden_user: vaultwarden
+    version: 14.5
+infrastructure:
+  keycloak:
+    admin_password: change-me-please
+    admin_user: admin
+    db_host: postgres
+    db_name: keycloak
+    db_password: keycloak_password
+    db_user: keycloak
+    enabled: true
+    port: 8083
+    realm_name: medocker
+    version: 21.1.1
+  traefik:
+    access_logs: true
+    acme_email: ${system.admin_email}
+    dashboard_port: 8888
+    enabled: true
+    http_port: 80
+    https_port: 443
+    log_level: INFO
+    providers:
+      docker: true
+      file: false
+    version: v2.9
+system:
+  admin_email: admin@example.com
+  data_directory: /data
+  domain: localhost
+  ssl_enabled: true
+  timezone: UTC
+user_setup:
+  client_apps: {}
+  configure_browser: true

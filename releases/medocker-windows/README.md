@@ -1,25 +1,15 @@
-# Medocker 0.1.0 for Windows
+# Medocker - Medical Practice in a Box
 
 ## Quick Start
 
-Run the main executable:
+1. Double-click on `launcher.bat` to start Medocker
+2. A web browser should open automatically to http://localhost:5000
+3. If a browser doesn't open, navigate to http://localhost:5000 manually
+4. Use the web interface to configure and deploy your Medocker stack
+5. Press Ctrl+C in the console window to stop the Medocker server when finished
 
-```
-./medocker.exe
-```
+## Important Notes
 
-This will automatically launch the web interface, which is the primary way to interact with Medocker.
-
-You can also run specific commands if needed:
-
-```
-./medocker.exe --help            # Show help
-./medocker.exe configure         # Configure the Medocker stack
-./medocker.exe web               # Start the web interface
-./medocker.exe deploy            # Deploy the Docker stack
-```
-
-For convenience, you can also use the launcher script:
-```
-./launcher.bat
-```
+- The executable must be run from its directory, which the launcher handles automatically
+- All configuration files are stored in the `config` directory
+- For more information, see the documentation in the `docs` directory

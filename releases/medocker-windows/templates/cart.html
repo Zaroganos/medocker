@@ -1,0 +1,835 @@
+{% extends 'base.html' %}
+
+{% block title %}Medocker - Cart{% endblock %}
+
+{% block sidebar %}
+<div class="nav flex-column">
+    <a class="nav-link" href="#cart-contents">
+        <i class="fas fa-shopping-cart me-2"></i> Cart Contents
+    </a>
+    <a class="nav-link" href="#specialty-bundles">
+        <i class="fas fa-layer-group me-2"></i> Specialty Bundles
+    </a>
+    <a class="nav-link" href="#services-section">
+        <i class="fas fa-cubes me-2"></i> Services
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Cart</h2>
+
+<div class="alert alert-info mb-4">
+    <i class="fas fa-info-circle me-2"></i> Add services to your cart to customize your Medocker deployment. You can add individual services or choose predefined specialty bundles.
+</div>
+
+<!-- Cart Contents Section -->
+<div id="cart-contents" class="config-section mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 section-header" data-bs-toggle="collapse" data-bs-target="#cart-contents-body" role="button" aria-expanded="true">
+        <div>
+            <h3><i class="fas fa-shopping-cart me-2"></i> Cart Contents <i class="fas fa-chevron-down section-toggle-icon"></i></h3>
+        </div>
+        <div>
+            <button class="btn btn-primary" id="confirm-deployment">
+                <i class="fas fa-check me-1"></i> Checkout
+            </button>
+        </div>
+    </div>
+    
+    <div class="collapse show" id="cart-contents-body">
+        <div class="card">
+            <div class="card-body">
+                <div id="cart-empty-message">
+                    <p class="text-center text-muted">Your cart is empty. Add services to get started.</p>
+                </div>
+                
+                <div id="cart-items" style="display: none;">
+                    <div class="overflow-auto" style="white-space: nowrap; max-width: 100%;">
+                        <div class="d-flex flex-row" id="cart-tiles">
+                            <!-- Cart tiles will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="toggle-table-view">
+                            <i class="fas fa-chevron-down me-1" id="toggle-icon"></i> Show Details
+                        </button>
+                        <button class="btn btn-outline-danger" id="clear-cart">
+                            <i class="fas fa-trash me-1"></i> Clear Cart
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive mt-2" id="cart-table-view" style="display: none;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Type</th>
+                                    <th>Version</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-items-list">
+                                <!-- Cart items will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Specialty Bundles Section -->
+<div id="specialty-bundles" class="config-section mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 section-header" data-bs-toggle="collapse" data-bs-target="#specialty-bundles-body" role="button" aria-expanded="true">
+        <h3><i class="fas fa-layer-group me-2"></i> Specialty Bundles <i class="fas fa-chevron-down section-toggle-icon"></i></h3>
+    </div>
+    
+    <div class="collapse show" id="specialty-bundles-body">
+        <div class="row service-container" id="specialty-stacks-container">
+            <!-- Specialty bundle cards will be populated here -->
+        </div>
+    </div>
+</div>
+
+<!-- Combined Services Section -->
+<div id="services-section" class="config-section mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 section-header" data-bs-toggle="collapse" data-bs-target="#services-section-body" role="button" aria-expanded="true">
+        <h3><i class="fas fa-cubes me-2"></i> Services <i class="fas fa-chevron-down section-toggle-icon"></i></h3>
+    </div>
+    
+    <div class="collapse show" id="services-section-body">
+        <!-- Search and Filter Controls -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" id="service-search" class="form-control" placeholder="Search services...">
+                    <button class="btn btn-outline-secondary" type="button" id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="all">All</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="free">Free</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="open-source">Open Source</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="enterprise">Enterprise</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Service Type Tabs -->
+        <ul class="nav nav-tabs mb-3" id="services-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="docker-tab" data-bs-toggle="tab" data-bs-target="#docker-content" type="button" role="tab" aria-controls="docker-content" aria-selected="true">
+                    <i class="fas fa-server me-1"></i> Docker (Server/Web)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai-content" type="button" role="tab" aria-controls="ai-content" aria-selected="false">
+                    <i class="fas fa-brain me-1"></i> AI (Models/Servers)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="apps-tab" data-bs-toggle="tab" data-bs-target="#apps-content" type="button" role="tab" aria-controls="apps-content" aria-selected="false">
+                    <i class="fas fa-desktop me-1"></i> Applications (Desktop/Mobile)
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="services-tabs-content">
+            <!-- Docker Services Tab -->
+            <div class="tab-pane fade show active" id="docker-content" role="tabpanel" aria-labelledby="docker-tab">
+                <div class="row service-container" id="docker-services-container">
+                    <!-- Docker service cards will be dynamically populated here -->
+                </div>
+            </div>
+            
+            <!-- AI Services Tab -->
+            <div class="tab-pane fade" id="ai-content" role="tabpanel" aria-labelledby="ai-tab">
+                <div class="row service-container" id="ai-services-container">
+                    <!-- AI service cards will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Applications Tab -->
+            <div class="tab-pane fade" id="apps-content" role="tabpanel" aria-labelledby="apps-tab">
+                <div class="row service-container" id="apps-services-container">
+                    <!-- Application cards will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Cart Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize cart
+    let cart = JSON.parse(localStorage.getItem('medockerCart')) || [];
+    updateCartDisplay();
+    
+    // Add click event for section headers
+    document.querySelectorAll('.section-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const icon = this.querySelector('.section-toggle-icon');
+            const targetId = this.getAttribute('data-bs-target');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
+            if (isExpanded) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+                this.setAttribute('aria-expanded', 'false');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+                this.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+    
+    // Toggle table view button
+    document.getElementById('toggle-table-view').addEventListener('click', function() {
+        const tableView = document.getElementById('cart-table-view');
+        const toggleIcon = document.getElementById('toggle-icon');
+        
+        if (tableView.style.display === 'none') {
+            tableView.style.display = 'block';
+            toggleIcon.classList.remove('fa-chevron-down');
+            toggleIcon.classList.add('fa-chevron-up');
+            this.innerHTML = '<i class="fas fa-chevron-up me-1" id="toggle-icon"></i> Hide Details';
+        } else {
+            tableView.style.display = 'none';
+            toggleIcon.classList.remove('fa-chevron-up');
+            toggleIcon.classList.add('fa-chevron-down');
+            this.innerHTML = '<i class="fas fa-chevron-down me-1" id="toggle-icon"></i> Show Details';
+        }
+    });
+    
+    // Load service catalog
+    let serviceCatalog = {};
+    
+    // Fetch service catalog from API
+    fetch('/api/service_catalog')
+        .then(response => response.json())
+        .then(data => {
+            serviceCatalog = data;
+            
+            // Populate Docker services
+            populateDockerServices(data.docker_services);
+            
+            // Populate AI services
+            populateAIServices(data.ai_services);
+            
+            // Populate Applications
+            populateAppServices(data.app_services || []);
+            
+            // Populate specialty bundles
+            populateSpecialtyStacks(data.specialty_stacks);
+            
+            // Add event listeners
+            attachEventListeners();
+        })
+        .catch(error => {
+            console.error('Error loading service catalog:', error);
+            showToast('Error loading service catalog', 'error');
+        });
+    
+    function populateDockerServices(services) {
+        const container = document.getElementById('docker-services-container');
+        container.innerHTML = '';
+        
+        if (!services || services.length === 0) {
+            container.innerHTML = '<div class="col-12"><p class="text-center text-muted">No Docker services available</p></div>';
+            return;
+        }
+        
+        services.forEach(service => {
+            const tagsString = service.tags.join(',');
+            const col = document.createElement('div');
+            col.className = 'col-md-3 mb-3 service-card';
+            col.dataset.tags = tagsString;
+            col.dataset.id = service.id;
+            col.dataset.serviceType = 'docker';
+            
+            // Create tag badges HTML
+            const tagBadges = service.tags.map(tag => {
+                let badgeClass = 'bg-secondary';
+                if (tag === 'free') badgeClass = 'bg-success';
+                if (tag === 'open-source') badgeClass = 'bg-info';
+                if (tag === 'enterprise') badgeClass = 'bg-danger';
+                
+                return `<span class="badge ${badgeClass}">${tag}</span>`;
+            }).join(' ');
+            
+            col.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">${service.name}</h5>
+                        <div class="tags">
+                            ${tagBadges}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${service.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">v${service.version}</small>
+                            <button class="btn btn-sm btn-primary add-to-cart" data-id="${service.id}" data-name="${service.name}" data-type="docker">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(col);
+        });
+    }
+    
+    function populateAIServices(services) {
+        const container = document.getElementById('ai-services-container');
+        container.innerHTML = '';
+        
+        if (!services || services.length === 0) {
+            container.innerHTML = '<div class="col-12"><p class="text-center text-muted">No AI services available</p></div>';
+            return;
+        }
+        
+        services.forEach(service => {
+            const tagsString = service.tags.join(',');
+            const col = document.createElement('div');
+            col.className = 'col-md-3 mb-3 service-card';
+            col.dataset.tags = tagsString;
+            col.dataset.id = service.id;
+            col.dataset.serviceType = 'ai';
+            
+            // Create tag badges HTML
+            const tagBadges = service.tags.map(tag => {
+                let badgeClass = 'bg-secondary';
+                if (tag === 'free') badgeClass = 'bg-success';
+                if (tag === 'local') badgeClass = 'bg-warning';
+                if (tag === 'api') badgeClass = 'bg-info';
+                if (tag === 'enterprise') badgeClass = 'bg-danger';
+                
+                return `<span class="badge ${badgeClass}">${tag}</span>`;
+            }).join(' ');
+            
+            col.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">${service.name}</h5>
+                        <div class="tags">
+                            ${tagBadges}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${service.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">${service.version}</small>
+                            <button class="btn btn-sm btn-primary add-to-cart" data-id="${service.id}" data-name="${service.name}" data-type="ai">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(col);
+        });
+    }
+    
+    function populateAppServices(services) {
+        const container = document.getElementById('apps-services-container');
+        container.innerHTML = '';
+        
+        if (!services || services.length === 0) {
+            container.innerHTML = '<div class="col-12"><p class="text-center text-muted">No application services available</p></div>';
+            return;
+        }
+        
+        services.forEach(service => {
+            const tagsString = service.tags.join(',');
+            const col = document.createElement('div');
+            col.className = 'col-md-3 mb-3 service-card';
+            col.dataset.tags = tagsString;
+            col.dataset.id = service.id;
+            col.dataset.serviceType = 'app';
+            
+            // Create tag badges HTML
+            const tagBadges = service.tags.map(tag => {
+                let badgeClass = 'bg-secondary';
+                if (tag === 'free') badgeClass = 'bg-success';
+                if (tag === 'desktop') badgeClass = 'bg-info';
+                if (tag === 'mobile') badgeClass = 'bg-warning';
+                if (tag === 'enterprise') badgeClass = 'bg-danger';
+                
+                return `<span class="badge ${badgeClass}">${tag}</span>`;
+            }).join(' ');
+            
+            col.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">${service.name}</h5>
+                        <div class="tags">
+                            ${tagBadges}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${service.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">v${service.version}</small>
+                            <button class="btn btn-sm btn-primary add-to-cart" data-id="${service.id}" data-name="${service.name}" data-type="app">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(col);
+        });
+    }
+    
+    function populateSpecialtyStacks(stacks) {
+        const container = document.getElementById('specialty-stacks-container');
+        container.innerHTML = '';
+        
+        if (!stacks || stacks.length === 0) {
+            container.innerHTML = '<div class="col-12"><p class="text-center text-muted">No specialty bundles available</p></div>';
+            return;
+        }
+        
+        stacks.forEach(stack => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-3 specialty-card';
+            col.dataset.id = stack.id;
+            
+            // Get services in this stack
+            const servicesList = stack.services.map(serviceId => {
+                const dockerService = serviceCatalog.docker_services?.find(s => s.id === serviceId);
+                const aiService = serviceCatalog.ai_services?.find(s => s.id === serviceId);
+                const appService = serviceCatalog.app_services?.find(s => s.id === serviceId);
+                const service = dockerService || aiService || appService;
+                
+                if (service) {
+                    return `<li class="list-group-item">${service.name}</li>`;
+                }
+                return `<li class="list-group-item">${serviceId}</li>`;
+            }).join('');
+            
+            col.innerHTML = `
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">${stack.name}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${stack.description}</p>
+                        <ul class="list-group list-group-flush mb-3">
+                            ${servicesList}
+                        </ul>
+                        <button class="btn btn-primary add-stack-to-cart" data-id="${stack.id}">
+                            <i class="fas fa-plus me-1"></i> Add Bundle
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(col);
+        });
+    }
+    
+    function attachEventListeners() {
+        // Add to cart event listeners
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const name = this.dataset.name;
+                const type = this.dataset.type;
+                
+                // Add to cart if not already in cart
+                if (!cart.find(item => item.id === id)) {
+                    // Find the service in the catalog to get complete info
+                    let service;
+                    if (type === 'docker') {
+                        service = serviceCatalog.docker_services?.find(s => s.id === id);
+                    } else if (type === 'ai') {
+                        service = serviceCatalog.ai_services?.find(s => s.id === id);
+                    } else if (type === 'app') {
+                        service = serviceCatalog.app_services?.find(s => s.id === id);
+                    }
+                    
+                    if (service) {
+                        cart.push({
+                            id: id,
+                            name: name,
+                            type: type,
+                            version: service.version,
+                            tags: service.tags
+                        });
+                        
+                        // Update cart display
+                        updateCartDisplay();
+                        
+                        // Show success message
+                        showToast(`${name} added to cart`);
+                    }
+                } else {
+                    showToast(`${name} is already in your cart`, 'warning');
+                }
+            });
+        });
+        
+        // Add specialty bundle to cart
+        document.querySelectorAll('.add-stack-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                
+                // Get services included in the bundle
+                const bundleServices = getBundleServices(id);
+                
+                // Add services to cart
+                let addedCount = 0;
+                bundleServices.forEach(service => {
+                    if (!cart.find(item => item.id === service.id)) {
+                        cart.push(service);
+                        addedCount++;
+                    }
+                });
+                
+                // Update cart display
+                updateCartDisplay();
+                
+                // Show success message
+                const bundleName = serviceCatalog.specialty_stacks?.find(s => s.id === id)?.name || id;
+                showToast(`${bundleName} bundle added to cart (${addedCount} new services)`);
+            });
+        });
+    }
+    
+    // Add event listeners for buttons that don't depend on the catalog
+    
+    // Clear cart button
+    document.getElementById('clear-cart').addEventListener('click', function() {
+        cart = [];
+        updateCartDisplay();
+        showToast('Cart cleared');
+    });
+    
+    // Confirm deployment button
+    document.getElementById('confirm-deployment').addEventListener('click', function() {
+        if (cart.length === 0) {
+            showToast('Your cart is empty. Add services to proceed.', 'warning');
+            return;
+        }
+        
+        // Send the deployment request to the server
+        fetch('/api/deploy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ services: cart })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Deployment initiated successfully! Redirecting to deployment status...', 'success');
+                // Redirect to deployment status page after a short delay
+                setTimeout(() => {
+                    window.location.href = '/deployment/' + data.deploymentId;
+                }, 2000);
+            } else {
+                showToast('Failed to deploy: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error deploying services:', error);
+            showToast('Error deploying services. Please try again.', 'error');
+        });
+    });
+    
+    // Search functionality
+    document.getElementById('search-button').addEventListener('click', function() {
+        const searchTerm = document.getElementById('service-search').value.toLowerCase();
+        filterServices(searchTerm);
+    });
+    
+    document.getElementById('service-search').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            const searchTerm = this.value.toLowerCase();
+            filterServices(searchTerm);
+        }
+    });
+    
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-primary');
+            
+            // Filter service cards
+            if (filter === 'all') {
+                document.querySelectorAll('.service-card').forEach(card => {
+                    card.style.display = 'block';
+                });
+            } else {
+                document.querySelectorAll('.service-card').forEach(card => {
+                    if (card.dataset.tags && card.dataset.tags.includes(filter)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+    
+    // Helper Functions
+    
+    function updateCartDisplay() {
+        // Update local storage
+        localStorage.setItem('medockerCart', JSON.stringify(cart));
+        
+        // Update cart display
+        const cartItemsList = document.getElementById('cart-items-list');
+        const cartEmptyMessage = document.getElementById('cart-empty-message');
+        const cartItems = document.getElementById('cart-items');
+        const cartTiles = document.getElementById('cart-tiles');
+        const cartTableView = document.getElementById('cart-table-view');
+        const toggleTableBtn = document.getElementById('toggle-table-view');
+        
+        if (cart.length === 0) {
+            cartEmptyMessage.style.display = 'block';
+            cartItems.style.display = 'none';
+            
+            // Update checkout display
+            document.getElementById('checkout-empty-message').style.display = 'block';
+            document.getElementById('checkout-content').style.display = 'none';
+        } else {
+            cartEmptyMessage.style.display = 'none';
+            cartItems.style.display = 'block';
+            
+            // Clear existing items
+            cartItemsList.innerHTML = '';
+            cartTiles.innerHTML = '';
+            
+            // Add items to the horizontally scrolling tiles
+            cart.forEach((item, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'card me-3 mb-3';
+                tile.style.minWidth = '200px';
+                tile.style.maxWidth = '200px';
+                
+                // Create tag badges HTML for the tile
+                const tagBadges = (item.tags || []).map(tag => {
+                    let badgeClass = 'bg-secondary';
+                    if (tag === 'free') badgeClass = 'bg-success';
+                    if (tag === 'open-source') badgeClass = 'bg-info';
+                    if (tag === 'enterprise') badgeClass = 'bg-danger';
+                    
+                    return `<span class="badge ${badgeClass} me-1">${tag}</span>`;
+                }).join('');
+                
+                tile.innerHTML = `
+                    <div class="card-body p-3">
+                        <h6 class="card-title">${item.name}</h6>
+                        <div class="d-flex flex-wrap mb-2">
+                            ${tagBadges}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">${item.version}</small>
+                            <button class="btn btn-sm btn-danger remove-tile" data-index="${index}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                cartTiles.appendChild(tile);
+            });
+            
+            // Add items to the table list
+            cart.forEach((item, index) => {
+                const row = document.createElement('tr');
+                let typeName = 'Unknown';
+                if (item.type === 'docker') typeName = 'Docker Service';
+                else if (item.type === 'ai') typeName = 'AI Service';
+                else if (item.type === 'app') typeName = 'Application';
+                
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${typeName}</td>
+                    <td>${item.version}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger remove-from-cart" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                cartItemsList.appendChild(row);
+            });
+            
+            // Add event listeners to remove buttons in table
+            document.querySelectorAll('.remove-from-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    const removed = cart.splice(index, 1)[0];
+                    updateCartDisplay();
+                    showToast(`${removed.name} removed from cart`);
+                });
+            });
+            
+            // Add event listeners to remove buttons in tiles
+            document.querySelectorAll('.remove-tile').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    const removed = cart.splice(index, 1)[0];
+                    updateCartDisplay();
+                    showToast(`${removed.name} removed from cart`);
+                });
+            });
+            
+            // Reset table view to collapsed state if cart was previously empty
+            if (cartTableView.style.display === '') {
+                cartTableView.style.display = 'none';
+                toggleTableBtn.innerHTML = '<i class="fas fa-chevron-down me-1" id="toggle-icon"></i> Show Details';
+            }
+        }
+    }
+    
+    function getBundleServices(bundleId) {
+        // Find the bundle in the catalog
+        const bundle = serviceCatalog.specialty_stacks?.find(s => s.id === bundleId);
+        
+        if (!bundle) {
+            return [];
+        }
+        
+        // Get the list of service IDs in the bundle
+        const serviceIds = bundle.services;
+        
+        // Build the list of services
+        const services = [];
+        
+        serviceIds.forEach(id => {
+            // Check if it's a Docker service
+            const dockerService = serviceCatalog.docker_services?.find(s => s.id === id);
+            if (dockerService) {
+                services.push({
+                    id: dockerService.id,
+                    name: dockerService.name,
+                    type: 'docker',
+                    version: dockerService.version,
+                    tags: dockerService.tags
+                });
+            }
+            
+            // Check if it's an AI service
+            const aiService = serviceCatalog.ai_services?.find(s => s.id === id);
+            if (aiService) {
+                services.push({
+                    id: aiService.id,
+                    name: aiService.name,
+                    type: 'ai',
+                    version: aiService.version,
+                    tags: aiService.tags
+                });
+            }
+            
+            // Check if it's an Application
+            const appService = serviceCatalog.app_services?.find(s => s.id === id);
+            if (appService) {
+                services.push({
+                    id: appService.id,
+                    name: appService.name,
+                    type: 'app',
+                    version: appService.version,
+                    tags: appService.tags
+                });
+            }
+        });
+        
+        return services;
+    }
+    
+    function filterServices(searchTerm) {
+        document.querySelectorAll('.service-card').forEach(card => {
+            const cardText = card.textContent.toLowerCase();
+            if (cardText.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    function showToast(message, type = 'success') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast
+        const toastId = 'toast-' + Date.now();
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'}`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        toast.setAttribute('id', toastId);
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Initialize and show the toast
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', function() {
+            this.remove();
+        });
+    }
+});
+</script>
+
+<style>
+.section-header {
+    cursor: pointer;
+}
+
+.section-header:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 0.25rem;
+}
+
+.section-toggle-icon {
+    transition: transform 0.3s;
+}
+
+.section-header[aria-expanded="false"] .section-toggle-icon {
+    transform: rotate(-90deg);
+}
+</style>
+{% endblock %} 
