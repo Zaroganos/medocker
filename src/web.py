@@ -414,18 +414,51 @@ def cart_page():
     return render_template('cart.html')
 
 
+def find_catalog_file():
+    """Find the service catalog file in various possible locations."""
+    possible_paths = [
+        # Primary path - project_root/data
+        os.path.join(project_root, 'data/service_catalog.json'),
+        
+        # Alternative paths if the primary fails
+        os.path.join(os.getcwd(), 'data/service_catalog.json'),
+        os.path.join(os.path.dirname(os.getcwd()), 'data/service_catalog.json'),
+        os.path.abspath('./data/service_catalog.json'),
+        
+        # Check in the directory where the executable is located (for packaged versions)
+        os.path.join(os.path.dirname(sys.executable), 'data/service_catalog.json')
+    ]
+    
+    # For debugging
+    results = []
+    
+    for path in possible_paths:
+        exists = os.path.exists(path)
+        results.append({"path": path, "exists": exists})
+        if exists:
+            return path, results
+    
+    return None, results
+
+
 @app.route('/api/service_catalog', methods=['GET'])
 def api_service_catalog():
     """Return the service catalog data."""
     try:
-        catalog_file = os.path.join(project_root, 'data/service_catalog.json')
+        catalog_path, search_results = find_catalog_file()
         
-        if os.path.exists(catalog_file):
+        # Add debug logging
+        print(f"DEBUG: Search results for catalog: {search_results}")
+        
+        if catalog_path:
             try:
-                with open(catalog_file, 'r', encoding='utf-8') as f:
+                with open(catalog_path, 'r', encoding='utf-8') as f:
                     catalog_text = f.read()
                 
+                print(f"DEBUG: Catalog file read from {catalog_path}, length: {len(catalog_text)}")
+                
                 if not catalog_text.strip():
+                    print("DEBUG: Catalog file is empty")
                     return jsonify({
                         'status': 'error',
                         'message': 'Service catalog file is empty'
@@ -433,14 +466,17 @@ def api_service_catalog():
                 
                 try:
                     catalog = json.loads(catalog_text)
+                    print("DEBUG: Catalog JSON parsed successfully")
                     return jsonify(catalog)
                 except json.JSONDecodeError as json_err:
+                    print(f"DEBUG: JSON decode error: {json_err}")
                     return jsonify({
                         'status': 'error',
                         'message': f'Invalid JSON in service catalog: {str(json_err)}',
                         'content_sample': catalog_text[:200] if len(catalog_text) > 200 else catalog_text
                     }), 500
             except Exception as read_err:
+                print(f"DEBUG: Error reading catalog file: {read_err}")
                 return jsonify({
                     'status': 'error',
                     'message': f'Error reading service catalog: {str(read_err)}'
@@ -449,9 +485,10 @@ def api_service_catalog():
             return jsonify({
                 'status': 'error',
                 'message': 'Service catalog file not found',
-                'path': catalog_file
+                'search_results': search_results
             }), 404
     except Exception as e:
+        print(f"DEBUG: Unexpected error in api_service_catalog: {e}")
         return jsonify({
             'status': 'error',
             'message': str(e)
@@ -632,32 +669,36 @@ def add_security_headers(response):
 @app.route('/api/debug/catalog', methods=['GET'])
 def debug_catalog():
     """Debug endpoint to check service catalog file status."""
+    catalog_path, search_results = find_catalog_file()
+    
     result = {
         'project_root': project_root,
         'current_directory': os.getcwd(),
-        'data_path': os.path.join(project_root, 'data'),
-        'catalog_path': os.path.join(project_root, 'data/service_catalog.json'),
-        'data_exists': os.path.exists(os.path.join(project_root, 'data')),
-        'catalog_exists': os.path.exists(os.path.join(project_root, 'data/service_catalog.json')),
-        'data_contents': []
+        'script_directory': script_dir,
+        'executable_path': sys.executable,
+        'python_path': sys.path,
+        'catalog_search_results': search_results,
+        'found_catalog_path': catalog_path
     }
     
-    # List contents of data directory if it exists
-    if result['data_exists']:
+    # Try to read catalog file if it was found
+    if catalog_path:
         try:
-            result['data_contents'] = os.listdir(os.path.join(project_root, 'data'))
-        except Exception as e:
-            result['data_error'] = str(e)
-    
-    # Try to read catalog file if it exists
-    if result['catalog_exists']:
-        try:
-            with open(os.path.join(project_root, 'data/service_catalog.json'), 'r') as f:
+            with open(catalog_path, 'r') as f:
                 sample = f.read(1000)  # Read first 1000 chars as sample
                 result['catalog_sample'] = sample
-                result['catalog_size'] = os.path.getsize(os.path.join(project_root, 'data/service_catalog.json'))
+                result['catalog_size'] = os.path.getsize(catalog_path)
         except Exception as e:
             result['catalog_error'] = str(e)
+    
+    # List contents of data directory relative to project root
+    data_dir = os.path.join(project_root, 'data')
+    result['data_dir_exists'] = os.path.exists(data_dir)
+    if result['data_dir_exists']:
+        try:
+            result['data_contents'] = os.listdir(data_dir)
+        except Exception as e:
+            result['data_error'] = str(e)
     
     return jsonify(result)
 

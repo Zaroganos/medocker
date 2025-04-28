@@ -228,17 +228,27 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Loading service catalog from /api/service_catalog');
         
-        // Fetch service catalog from API
-        fetch('/api/service_catalog')
+        // Fetch service catalog from API with a timeout
+        const fetchPromise = fetch('/api/service_catalog');
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000)
+        );
+        
+        Promise.race([fetchPromise, timeoutPromise])
             .then(response => {
                 console.log('Service catalog API response status:', response.status);
-                if (!response.ok) {
-                    return response.json().then(err => {
-                        console.error('Error response data:', err);
-                        throw new Error(`Server returned ${response.status}: ${err.message || 'Unknown error'}`);
-                    });
-                }
-                return response.json();
+                // Always read the response, even on error responses
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        // For error responses, include the error data from the server
+                        throw Object.assign(new Error(`Server returned ${response.status}`), { 
+                            status: response.status,
+                            statusText: response.statusText,
+                            responseData: data
+                        });
+                    }
+                    return data;
+                });
             })
             .then(data => {
                 console.log('Service catalog data received:', data);
@@ -273,25 +283,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error loading service catalog:', error);
                 console.error('Error details:', error.stack || 'No stack trace available');
                 
+                const errorMessage = error.responseData && error.responseData.message 
+                    ? error.responseData.message 
+                    : error.message;
+                
+                const searchResults = error.responseData && error.responseData.search_results
+                    ? `<div class="mt-3">
+                        <p>Path search results:</p>
+                        <pre class="bg-light p-2" style="max-height: 200px; overflow-y: auto;">${JSON.stringify(error.responseData.search_results, null, 2)}</pre>
+                       </div>`
+                    : '';
+                
                 // Show error message with debug info and retry button
                 const errorHtml = `
                     <div class="alert alert-danger">
                         <h5><i class="fas fa-exclamation-triangle me-2"></i> Error loading service catalog</h5>
-                        <p>${error.message}</p>
+                        <p>${errorMessage}</p>
+                        ${searchResults}
                         <div class="mt-3">
                             <p>Debugging steps:</p>
                             <ol>
                                 <li>Check that service_catalog.json exists in the data directory</li>
                                 <li>Verify the file has valid JSON format</li>
                                 <li>Check server logs for more details</li>
+                                <li>Try restarting the application</li>
                             </ol>
                         </div>
-                        <button class="btn btn-primary mt-2" id="retry-load-catalog">
-                            <i class="fas fa-sync me-1"></i> Retry
-                        </button>
-                        <a href="/api/debug/catalog" target="_blank" class="btn btn-outline-secondary mt-2 ms-2">
-                            <i class="fas fa-bug me-1"></i> Diagnostics
-                        </a>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button class="btn btn-primary" id="retry-load-catalog">
+                                <i class="fas fa-sync me-1"></i> Retry
+                            </button>
+                            <a href="/api/debug/catalog" target="_blank" class="btn btn-outline-secondary">
+                                <i class="fas fa-bug me-1"></i> Diagnostics
+                            </a>
+                            <button class="btn btn-outline-info" id="load-demo-catalog">
+                                <i class="fas fa-vial me-1"></i> Load Demo Data
+                            </button>
+                        </div>
                     </div>
                 `;
                 
@@ -300,6 +328,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add event listener for retry button
                 document.getElementById('retry-load-catalog').addEventListener('click', function() {
                     loadServiceCatalog();
+                });
+                
+                // Add event listener for demo data button
+                document.getElementById('load-demo-catalog').addEventListener('click', function() {
+                    // Use demo data defined in a JavaScript object
+                    const demoData = {
+                        docker_services: [
+                            {
+                                id: "openemr-demo",
+                                name: "OpenEMR (Demo)",
+                                description: "Electronic Medical Records system",
+                                version: "7.0.0",
+                                tags: ["free", "open-source", "emr", "clinical"]
+                            },
+                            {
+                                id: "nextcloud-demo",
+                                name: "Nextcloud (Demo)",
+                                description: "Secure file sharing and collaboration",
+                                version: "25.0.3",
+                                tags: ["free", "open-source", "storage"]
+                            }
+                        ],
+                        ai_services: [
+                            {
+                                id: "medllm-demo",
+                                name: "MedLLM (Demo)",
+                                description: "Specialized medical language model",
+                                version: "7B parameters",
+                                tags: ["free", "local", "nlp", "diagnosis"]
+                            }
+                        ],
+                        specialty_stacks: [
+                            {
+                                id: "general-demo",
+                                name: "General Practice (Demo)",
+                                description: "Complete stack for general medical practices",
+                                services: ["openemr-demo", "nextcloud-demo"]
+                            }
+                        ]
+                    };
+                    
+                    // Use the demo data
+                    serviceCatalog = demoData;
+                    populateDockerServices(demoData.docker_services);
+                    populateAIServices(demoData.ai_services);
+                    populateAppServices(demoData.app_services || []);
+                    populateSpecialtyStacks(demoData.specialty_stacks);
+                    attachEventListeners();
                 });
             });
     }
