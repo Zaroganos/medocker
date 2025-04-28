@@ -387,3 +387,22 @@ poetry run flake8
 # Run tests (when implemented)
 poetry run pytest
 ```
+
+## Setup
+
+### Data Files
+Medocker uses a `data-templates` directory to store template data files that should be copied to the `data` directory during setup. This keeps runtime data out of source control while providing necessary template files.
+
+To set up the data directory:
+
+**Linux/Mac:**
+```bash
+./scripts/setup_data.sh
+```
+
+**Windows:**
+```cmd
+scripts\setup_data.bat
+```
+
+These scripts will initialize the `data` directory with template files from `data-templates` if they don't already exist.
