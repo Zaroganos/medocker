@@ -29,11 +29,28 @@ RUN poetry config virtualenvs.create false
 # Install dependencies
 RUN poetry install --only main --no-interaction --no-ansi
 
+# Create a simple Flask application script that doesn't rely on complex imports
+RUN echo "import os\n\
+import sys\n\
+sys.path.insert(0, '/app')\n\
+from src.web import app\n\
+\n\
+# Get port from environment variable\n\
+port = int(os.environ.get('PORT', 9876))\n\
+host = os.environ.get('HOST', '0.0.0.0')\n\
+\n\
+print(f'Starting Medocker on {host}:{port}')\n\
+\n\
+if __name__ == '__main__':\n\
+    from waitress import serve\n\
+    serve(app, host=host, port=port, threads=20)\n\
+" > /app/start_app.py
+
 # Create necessary directories
 RUN mkdir -p /app/config /app/templates /app/static /app/playbooks
 
 # Expose port
 EXPOSE 9876
 
-# Run the application
-CMD ["python", "-m", "src.run_web"] 
+# Run the application with the simple script
+CMD ["python", "/app/start_app.py"] 

@@ -597,6 +597,7 @@ def main():
     port = config.PORT
     
     print(f"Starting Medocker Web Configuration Tool at http://{host}:{port}")
+    print(f"Using port from environment: {os.environ.get('PORT', 'Not set')}")
     
     # Use waitress for production
     if os.environ.get('FLASK_ENV') == 'development':
