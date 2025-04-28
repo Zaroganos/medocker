@@ -20,6 +20,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Create necessary directories first
 RUN mkdir -p /app/src /app/config /app/templates /app/static /app/playbooks
 
+# Create required files for Poetry
+RUN touch /app/src/__init__.py && \
+    echo "# Medocker\n\nMedical Docker Stack" > /app/README.md
+
 # Install Poetry
 RUN pip install --no-cache-dir poetry==1.5.1
 
@@ -28,9 +32,6 @@ COPY pyproject.toml /app/
 
 # Configure poetry to not use virtualenv
 RUN poetry config virtualenvs.create false
-
-# Create an empty src/__init__.py file to make the package valid
-RUN touch /app/src/__init__.py
 
 # Generate a fresh lock file and install dependencies
 RUN poetry lock --no-update && poetry install --only main --no-interaction --no-ansi
