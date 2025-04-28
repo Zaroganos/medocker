@@ -662,6 +662,41 @@ def debug_catalog():
     return jsonify(result)
 
 
+@app.route('/api/test-mount', methods=['GET'])
+def test_mount():
+    """Simple endpoint to test if volume mounting is working."""
+    test_file = os.path.join(project_root, 'data/test.json')
+    if os.path.exists(test_file):
+        try:
+            with open(test_file, 'r') as f:
+                data = json.load(f)
+            return jsonify({
+                'status': 'success',
+                'message': 'Test file found and loaded successfully',
+                'data': data
+            })
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Error reading test file: {str(e)}'
+            }), 500
+    else:
+        return jsonify({
+            'status': 'error', 
+            'message': 'Test file not found',
+            'path': test_file,
+            'cwd': os.getcwd(),
+            'data_dir_exists': os.path.exists(os.path.join(project_root, 'data')),
+            'data_dir_contents': os.listdir(os.path.join(project_root, 'data')) if os.path.exists(os.path.join(project_root, 'data')) else []
+        }), 404
+
+
+@app.route('/test-api')
+def test_api_page():
+    """Render a simple page to test the API endpoints."""
+    return render_template('test_api.html')
+
+
 def main():
     """Main entry point for the Medocker web configuration tool."""
     host = config.HOST

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Medocker - API Test{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>API Test Page</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Test Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <button id="test-mount-btn" class="btn btn-primary">Test Volume Mount</button>
+                        <button id="test-catalog-btn" class="btn btn-primary">Test Service Catalog</button>
+                        <button id="test-debug-btn" class="btn btn-primary">Debug Catalog</button>
+                    </div>
+                    
+                    <div class="alert alert-info mb-3" id="status-message" style="display: none;">
+                        Testing...
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="response-data" class="form-label">Response:</label>
+                        <pre id="response-data" class="p-3 bg-light" style="max-height: 400px; overflow: auto;">No data yet</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusMessage = document.getElementById('status-message');
+    const responseData = document.getElementById('response-data');
+    
+    // Test Mount API
+    document.getElementById('test-mount-btn').addEventListener('click', function() {
+        testEndpoint('/api/test-mount');
+    });
+    
+    // Test Service Catalog API
+    document.getElementById('test-catalog-btn').addEventListener('click', function() {
+        testEndpoint('/api/service_catalog');
+    });
+    
+    // Test Debug Catalog API
+    document.getElementById('test-debug-btn').addEventListener('click', function() {
+        testEndpoint('/api/debug/catalog');
+    });
+    
+    function testEndpoint(url) {
+        statusMessage.style.display = 'block';
+        statusMessage.className = 'alert alert-info';
+        statusMessage.textContent = `Testing ${url}...`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json()
+                        .then(errorData => {
+                            throw { status: response.status, data: errorData };
+                        })
+                        .catch(err => {
+                            throw { status: response.status, statusText: response.statusText };
+                        });
+                }
+                return response.json();
+            })
+            .then(data => {
+                statusMessage.className = 'alert alert-success';
+                statusMessage.textContent = `Success! Status: 200 OK`;
+                responseData.textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                statusMessage.className = 'alert alert-danger';
+                if (error.status) {
+                    statusMessage.textContent = `Error! Status: ${error.status} ${error.statusText || ''}`;
+                    if (error.data) {
+                        responseData.textContent = JSON.stringify(error.data, null, 2);
+                    } else {
+                        responseData.textContent = 'No detailed error data available.';
+                    }
+                } else {
+                    statusMessage.textContent = `Network error: ${error.message}`;
+                    responseData.textContent = error.toString();
+                }
+            });
+    }
+});
+</script>
+{% endblock %} 
