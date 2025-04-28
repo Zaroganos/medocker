@@ -16,7 +16,11 @@ from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session
 from flask_wtf import CSRFProtect
 from flask_session import Session
+from flask_cors import CORS
 from waitress import serve
+
+# Import configuration
+from src.config import get_config
 
 # Import functions from configure.py
 from configure import (
@@ -31,32 +35,44 @@ from configure import (
     run_ansible_playbook
 )
 
+# Load configuration based on environment
+config = get_config()
+
 # Initialize Flask app
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(script_dir)
-templates_dir = os.path.join(project_root, 'templates')
-static_dir = os.path.join(project_root, 'static')
 
 app = Flask(__name__, 
-           template_folder=templates_dir,
-           static_folder=static_dir)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
+           template_folder=config.TEMPLATES_DIR,
+           static_folder=config.STATIC_DIR)
+
+# Apply configuration settings
+app.config['SECRET_KEY'] = config.SECRET_KEY
+app.config['SESSION_TYPE'] = config.SESSION_TYPE
+app.config['SESSION_PERMANENT'] = config.SESSION_PERMANENT
+app.config['SESSION_COOKIE_SECURE'] = config.SESSION_COOKIE_SECURE
+app.config['SESSION_COOKIE_HTTPONLY'] = config.SESSION_COOKIE_HTTPONLY
+app.config['SESSION_COOKIE_SAMESITE'] = config.SESSION_COOKIE_SAMESITE
+app.config['PREFERRED_URL_SCHEME'] = config.PREFERRED_URL_SCHEME
+
+# Initialize CSRF protection
 csrf = CSRFProtect(app)
 
+# Initialize CORS
+CORS(app, origins=config.CORS_ORIGINS, supports_credentials=config.CORS_SUPPORTS_CREDENTIALS)
+
 # Configure Flask-Session
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_FILE_DIR'] = os.path.join(tempfile.gettempdir(), 'medocker_sessions')
-os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
+app.config['SESSION_FILE_DIR'] = config.SESSION_FILE_DIR
+os.makedirs(config.SESSION_FILE_DIR, exist_ok=True)
 Session(app)
 
 # Ensure the template and static directories exist
-os.makedirs(templates_dir, exist_ok=True)
-os.makedirs(static_dir, exist_ok=True)
+os.makedirs(config.TEMPLATES_DIR, exist_ok=True)
+os.makedirs(config.STATIC_DIR, exist_ok=True)
 
-# Default configuration file
-DEFAULT_CONFIG_FILE = os.path.join(project_root, 'config/default.yml')
-CUSTOM_CONFIG_FILE = os.path.join(project_root, 'config/custom.yml')
+# Default configuration file paths
+DEFAULT_CONFIG_FILE = config.DEFAULT_CONFIG_FILE
+CUSTOM_CONFIG_FILE = config.CUSTOM_CONFIG_FILE
 
 
 @app.route('/')
@@ -565,19 +581,28 @@ def update_config_from_form(config, form_data):
     return config
 
 
+@app.after_request
+def add_security_headers(response):
+    """Add security headers to all responses."""
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
+
+
 def main():
     """Main entry point for the Medocker web configuration tool."""
-    # Create the templates directory if it does not exist
-    host = os.environ.get('HOST', '0.0.0.0')
-    port = int(os.environ.get('PORT', '5000'))
+    host = config.HOST
+    port = config.PORT
     
     print(f"Starting Medocker Web Configuration Tool at http://{host}:{port}")
     
     # Use waitress for production
     if os.environ.get('FLASK_ENV') == 'development':
-        app.run(host=host, port=port, debug=True)
+        app.run(host=host, port=port, debug=config.DEBUG)
     else:
-        serve(app, host=host, port=port)
+        serve(app, host=host, port=port, threads=config.THREADS)
 
 
 if __name__ == '__main__':

@@ -60,7 +60,7 @@ def open_browser(url, delay=1.0):
     browser_thread.daemon = True
     browser_thread.start()
 
-def run_web_server(host='0.0.0.0', port=5000, debug=False):
+def run_web_server(host='0.0.0.0', port=9876, debug=False):
     """Run the web server with the specified options."""
     if debug:
         os.environ['FLASK_ENV'] = 'development'
@@ -92,7 +92,7 @@ def main():
     """Main entry point for the Poetry script."""
     parser = argparse.ArgumentParser(description='Medocker Web UI')
     parser.add_argument('--host', help='Host to bind the server to', default='0.0.0.0')
-    parser.add_argument('--port', '-p', type=int, help='Port to run the server on', default=5000)
+    parser.add_argument('--port', '-p', type=int, help='Port to run the server on', default=9876)
     parser.add_argument('--debug', '-d', action='store_true', help='Run in debug mode')
     
     args = parser.parse_args()

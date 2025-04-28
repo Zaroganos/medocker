@@ -9,7 +9,7 @@ cd /d "%~dp0"
 echo Starting Medocker from %CD%...
 echo.
 echo If a browser window doesn't open automatically, 
-echo please visit: http://localhost:5000
+echo please visit: http://localhost:9876
 echo.
 echo Press Ctrl+C to stop the server when finished.
 echo.

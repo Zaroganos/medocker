@@ -51,7 +51,7 @@ echo.
 echo echo Starting Medocker from %%CD%%...
 echo echo.
 echo echo If a browser window doesn't open automatically, 
-echo echo please visit: http://localhost:5000
+echo echo please visit: http://localhost:9876
 echo echo.
 echo echo Press Ctrl+C to stop the server when finished.
 echo echo.
@@ -72,8 +72,8 @@ echo.
 echo ## Quick Start
 echo.
 echo 1. Double-click on `launcher.bat` to start Medocker
-echo 2. A web browser should open automatically to http://localhost:5000
-echo 3. If a browser doesn't open, navigate to http://localhost:5000 manually
+echo 2. A web browser should open automatically to http://localhost:9876
+echo 3. If a browser doesn't open, navigate to http://localhost:9876 manually
 echo 4. Use the web interface to configure and deploy your Medocker stack
 echo 5. Press Ctrl+C in the console window to stop the Medocker server when finished
 echo.

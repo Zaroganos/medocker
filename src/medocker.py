@@ -62,7 +62,7 @@ def main():
     # Web interface command
     web_parser = subparsers.add_parser('web', help='Start the web interface')
     web_parser.add_argument('--host', help='Host to bind the web server to', default='0.0.0.0')
-    web_parser.add_argument('--port', type=int, help='Port to bind the web server to', default=5000)
+    web_parser.add_argument('--port', type=int, help='Port to bind the web server to', default=9876)
     web_parser.add_argument('--debug', action='store_true', help='Run in debug mode')
     
     # Deploy command
@@ -79,7 +79,7 @@ def main():
     if args.command is None:
         print("No command specified. Launching web interface...")
         print("Use 'medocker --help' for other available commands.")
-        return run_web_server(host='0.0.0.0', port=5000, debug=False)
+        return run_web_server(host='0.0.0.0', port=9876, debug=False)
     
     if args.command == 'configure':
         return run_configuration(args)
