@@ -20,14 +20,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install Poetry
 RUN pip install --no-cache-dir poetry==1.5.1
 
-# Copy the entire project for a more reliable build
-COPY . /app/
+# Copy only pyproject.toml first
+COPY pyproject.toml /app/
 
 # Configure poetry to not use virtualenv
 RUN poetry config virtualenvs.create false
 
-# Install dependencies
-RUN poetry install --only main --no-interaction --no-ansi
+# Generate a fresh lock file and install dependencies
+RUN poetry lock --no-update && poetry install --only main --no-interaction --no-ansi
+
+# Now copy the rest of the application (except poetry.lock which we've already generated)
+COPY . /app/
 
 # Create a simple Flask application script that doesn't rely on complex imports
 RUN echo "import os\n\

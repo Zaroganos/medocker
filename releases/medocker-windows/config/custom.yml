@@ -33,7 +33,7 @@ additional_services:
     - 8444:8444
     version: 3.0.0
   mattermost:
-    enabled: false
+    enabled: true
     port: 8065
     version: 7.5
   metabase:
@@ -76,7 +76,7 @@ additional_services:
     port: 9090
     version: v2.39.1
   rustdesk:
-    enabled: false
+    enabled: true
     hbbr_port: 21116
     hbbs_port: 21115
     key_base: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
@@ -99,7 +99,6 @@ components:
     - contacts
     - collabora_online
     - talk
-    client_enabled: true
     db_host: mariadb
     db_name: nextcloud
     db_pass: nextcloud_password
@@ -117,7 +116,6 @@ components:
     version: 7.0.0
   vaultwarden:
     admin_token: change-me-please
-    client_enabled: true
     db_host: postgres
     db_name: vaultwarden
     db_pass: vaultwarden_password
@@ -163,11 +161,11 @@ infrastructure:
     version: 21.1.1
   traefik:
     access_logs: true
-    acme_email: ${system.admin_email}
-    dashboard_port: 8888
+    acme_email: admin@example.com
+    dashboard_port: '8888'
     enabled: true
-    http_port: 80
-    https_port: 443
+    http_port: '80'
+    https_port: '443'
     log_level: INFO
     providers:
       docker: true
@@ -179,6 +177,3 @@ system:
   domain: localhost
   ssl_enabled: true
   timezone: UTC
-user_setup:
-  client_apps: {}
-  configure_browser: true
