@@ -419,32 +419,39 @@ def api_service_catalog():
     """Return the service catalog data."""
     try:
         catalog_file = os.path.join(project_root, 'data/service_catalog.json')
-        print(f"DEBUG: Looking for catalog file at: {catalog_file}")
-        print(f"DEBUG: Project root is: {project_root}")
-        print(f"DEBUG: Current directory: {os.getcwd()}")
-        print(f"DEBUG: Directory listing of data folder:")
-        try:
-            for item in os.listdir(os.path.join(project_root, 'data')):
-                print(f"  - {item}")
-        except Exception as list_err:
-            print(f"DEBUG: Error listing directory: {str(list_err)}")
-            
+        
         if os.path.exists(catalog_file):
-            print(f"DEBUG: Catalog file found, attempting to load")
-            with open(catalog_file, 'r') as f:
-                catalog = json.load(f)
-            print(f"DEBUG: Catalog loaded successfully with {len(catalog.get('docker_services', []))} docker services")
-            return jsonify(catalog)
+            try:
+                with open(catalog_file, 'r', encoding='utf-8') as f:
+                    catalog_text = f.read()
+                
+                if not catalog_text.strip():
+                    return jsonify({
+                        'status': 'error',
+                        'message': 'Service catalog file is empty'
+                    }), 500
+                
+                try:
+                    catalog = json.loads(catalog_text)
+                    return jsonify(catalog)
+                except json.JSONDecodeError as json_err:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'Invalid JSON in service catalog: {str(json_err)}',
+                        'content_sample': catalog_text[:200] if len(catalog_text) > 200 else catalog_text
+                    }), 500
+            except Exception as read_err:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Error reading service catalog: {str(read_err)}'
+                }), 500
         else:
-            print(f"DEBUG: Catalog file NOT found at {catalog_file}")
             return jsonify({
                 'status': 'error',
-                'message': 'Service catalog file not found'
+                'message': 'Service catalog file not found',
+                'path': catalog_file
             }), 404
     except Exception as e:
-        print(f"DEBUG: Error in api_service_catalog: {str(e)}")
-        import traceback
-        traceback.print_exc()
         return jsonify({
             'status': 'error',
             'message': str(e)
@@ -620,6 +627,39 @@ def add_security_headers(response):
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     return response
+
+
+@app.route('/api/debug/catalog', methods=['GET'])
+def debug_catalog():
+    """Debug endpoint to check service catalog file status."""
+    result = {
+        'project_root': project_root,
+        'current_directory': os.getcwd(),
+        'data_path': os.path.join(project_root, 'data'),
+        'catalog_path': os.path.join(project_root, 'data/service_catalog.json'),
+        'data_exists': os.path.exists(os.path.join(project_root, 'data')),
+        'catalog_exists': os.path.exists(os.path.join(project_root, 'data/service_catalog.json')),
+        'data_contents': []
+    }
+    
+    # List contents of data directory if it exists
+    if result['data_exists']:
+        try:
+            result['data_contents'] = os.listdir(os.path.join(project_root, 'data'))
+        except Exception as e:
+            result['data_error'] = str(e)
+    
+    # Try to read catalog file if it exists
+    if result['catalog_exists']:
+        try:
+            with open(os.path.join(project_root, 'data/service_catalog.json'), 'r') as f:
+                sample = f.read(1000)  # Read first 1000 chars as sample
+                result['catalog_sample'] = sample
+                result['catalog_size'] = os.path.getsize(os.path.join(project_root, 'data/service_catalog.json'))
+        except Exception as e:
+            result['catalog_error'] = str(e)
+    
+    return jsonify(result)
 
 
 def main():
