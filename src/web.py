@@ -697,6 +697,23 @@ def test_api_page():
     return render_template('test_api.html')
 
 
+@app.route('/api/simple-test')
+def simple_test():
+    """A simple test endpoint that returns basic JSON data."""
+    return jsonify({
+        'status': 'success',
+        'message': 'Simple test endpoint is working',
+        'app_info': {
+            'app_name': 'Medocker',
+            'script_dir': script_dir,
+            'project_root': project_root,
+            'current_dir': os.getcwd(),
+            'templates_dir': config.TEMPLATES_DIR,
+            'static_dir': config.STATIC_DIR
+        }
+    })
+
+
 def main():
     """Main entry point for the Medocker web configuration tool."""
     host = config.HOST

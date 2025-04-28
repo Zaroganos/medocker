@@ -15,7 +15,6 @@ services:
       - THREADS=20
     volumes:
       - medocker_config:/app/config
-      - ./data:/app/data  # Mount local data directory instead of using a named volume
     ports:
       - "9876:9876"  # Expose to all interfaces, not just localhost
     restart: unless-stopped
