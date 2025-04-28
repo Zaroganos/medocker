@@ -17,7 +17,7 @@ services:
       - medocker_config:/app/config
       - medocker_data:/app/data
     ports:
-      - "127.0.0.1:9876:9876"  # Only expose locally, use reverse proxy for public access
+      - "9876:9876"  # Expose to all interfaces, not just localhost
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9876/"]
