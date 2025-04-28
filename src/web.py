@@ -419,16 +419,32 @@ def api_service_catalog():
     """Return the service catalog data."""
     try:
         catalog_file = os.path.join(project_root, 'data/service_catalog.json')
+        print(f"DEBUG: Looking for catalog file at: {catalog_file}")
+        print(f"DEBUG: Project root is: {project_root}")
+        print(f"DEBUG: Current directory: {os.getcwd()}")
+        print(f"DEBUG: Directory listing of data folder:")
+        try:
+            for item in os.listdir(os.path.join(project_root, 'data')):
+                print(f"  - {item}")
+        except Exception as list_err:
+            print(f"DEBUG: Error listing directory: {str(list_err)}")
+            
         if os.path.exists(catalog_file):
+            print(f"DEBUG: Catalog file found, attempting to load")
             with open(catalog_file, 'r') as f:
                 catalog = json.load(f)
+            print(f"DEBUG: Catalog loaded successfully with {len(catalog.get('docker_services', []))} docker services")
             return jsonify(catalog)
         else:
+            print(f"DEBUG: Catalog file NOT found at {catalog_file}")
             return jsonify({
                 'status': 'error',
                 'message': 'Service catalog file not found'
             }), 404
     except Exception as e:
+        print(f"DEBUG: Error in api_service_catalog: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'status': 'error',
             'message': str(e)
