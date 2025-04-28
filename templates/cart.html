@@ -220,36 +220,52 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('apps-services-container').innerHTML = '';
         document.getElementById('specialty-stacks-container').innerHTML = '';
         
+        console.log('Loading service catalog from /api/service_catalog');
+        
         // Fetch service catalog from API
         fetch('/api/service_catalog')
             .then(response => {
+                console.log('Service catalog API response status:', response.status);
                 if (!response.ok) {
                     return response.json().then(err => {
+                        console.error('Error response data:', err);
                         throw new Error(`Server returned ${response.status}: ${err.message || 'Unknown error'}`);
                     });
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Service catalog data received:', data);
                 serviceCatalog = data;
                 
+                if (!data.docker_services) {
+                    console.error('Missing docker_services in catalog data');
+                    throw new Error('Invalid catalog data: missing docker_services');
+                }
+                
                 // Populate Docker services
+                console.log('Populating Docker services:', data.docker_services.length);
                 populateDockerServices(data.docker_services);
                 
                 // Populate AI services
+                console.log('Populating AI services:', data.ai_services ? data.ai_services.length : 0);
                 populateAIServices(data.ai_services);
                 
                 // Populate Applications
+                console.log('Populating App services:', data.app_services ? data.app_services.length : 0);
                 populateAppServices(data.app_services || []);
                 
                 // Populate specialty bundles
+                console.log('Populating Specialty stacks:', data.specialty_stacks ? data.specialty_stacks.length : 0);
                 populateSpecialtyStacks(data.specialty_stacks);
                 
                 // Add event listeners
+                console.log('Attaching event listeners');
                 attachEventListeners();
             })
             .catch(error => {
                 console.error('Error loading service catalog:', error);
+                console.error('Error details:', error.stack || 'No stack trace available');
                 
                 // Show error message with debug info and retry button
                 const errorHtml = `
