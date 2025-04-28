@@ -22,18 +22,33 @@ from waitress import serve
 # Import configuration
 from src.config import get_config
 
-# Import functions from configure.py
-from configure import (
-    load_config, 
-    save_config, 
-    generate_password,
-    resolve_variable_references,
-    generate_docker_compose,
-    create_directories,
-    deploy_docker_compose_ssh,
-    generate_ansible_playbook,
-    run_ansible_playbook
-)
+# Try different import paths for configure.py
+try:
+    # Try relative import first (within the same package)
+    from src.configure import (
+        load_config, 
+        save_config, 
+        generate_password,
+        resolve_variable_references,
+        generate_docker_compose,
+        create_directories,
+        deploy_docker_compose_ssh,
+        generate_ansible_playbook,
+        run_ansible_playbook
+    )
+except ImportError:
+    # Fall back to direct import (for backward compatibility)
+    from configure import (
+        load_config, 
+        save_config, 
+        generate_password,
+        resolve_variable_references,
+        generate_docker_compose,
+        create_directories,
+        deploy_docker_compose_ssh,
+        generate_ansible_playbook,
+        run_ansible_playbook
+    )
 
 # Load configuration based on environment
 config = get_config()

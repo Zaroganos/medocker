@@ -32,8 +32,23 @@ RUN poetry install --only main --no-interaction --no-ansi
 # Create a simple Flask application script that doesn't rely on complex imports
 RUN echo "import os\n\
 import sys\n\
+\n\
+# Add app directory to the Python path\n\
 sys.path.insert(0, '/app')\n\
-from src.web import app\n\
+\n\
+# Print available modules for debugging\n\
+print('Current directory:', os.getcwd())\n\
+print('Directory contents:', os.listdir('.'))\n\
+print('src directory contents:', os.listdir('./src'))\n\
+print('Python path:', sys.path)\n\
+\n\
+try:\n\
+    from src.web import app\n\
+    print('Successfully imported app')\n\
+except ImportError as e:\n\
+    print(f'ImportError: {e}')\n\
+    print(f'Error details: {str(e)}')\n\
+    sys.exit(1)\n\
 \n\
 # Get port from environment variable\n\
 port = int(os.environ.get('PORT', 9876))\n\
