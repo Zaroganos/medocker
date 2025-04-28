@@ -1,0 +1,17 @@
+clients:
+- attributes:
+    pkce.code.challenge.method: S256
+  clientAuthenticatorType: client-secret
+  clientId: vaultwarden
+  enabled: true
+  protocol: openid-connect
+  publicClient: false
+  redirectUris:
+  - https://vaultwarden.localhost/*
+  secret: vaultwarden-secret
+  webOrigins:
+  - https://vaultwarden.localhost
+enabled: true
+realm: medocker
+registrationAllowed: false
+sslRequired: external

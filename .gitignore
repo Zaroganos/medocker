@@ -162,8 +162,8 @@ wheels/
 poetry.lock
 
 # Docker
-data/
-docker-compose.yml
+# data/ - Removed to allow tracking of data files
+# docker-compose.yml - Removed to allow tracking of docker-compose.yml
 
 # Environment and configuration
 .env

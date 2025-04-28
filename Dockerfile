@@ -18,7 +18,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     FLASK_ENV=production
 
 # Create necessary directories first
-RUN mkdir -p /app/src /app/config /app/templates /app/static /app/playbooks /app/data
+RUN mkdir -p /app/src /app/config /app/templates /app/static /app/playbooks
 
 # Create empty __init__.py file
 RUN touch /app/src/__init__.py
@@ -34,14 +34,6 @@ RUN pip install pyyaml flask flask-wtf wtforms waitress paramiko ansible-runner 
 
 # Copy the rest of the application
 COPY . /app/
-
-# Copy template data to data directory
-RUN if [ -d "/app/data-templates" ]; then \
-        echo "Copying files from data-templates to data directory..."; \
-        cp -r /app/data-templates/*.json /app/data/ 2>/dev/null || echo "No template files found"; \
-        echo "Data directory contents:"; \
-        ls -la /app/data/; \
-    fi
 
 # Create a simple Flask application script that doesn't rely on complex imports
 RUN echo "import os\n\

@@ -15,7 +15,6 @@ services:
       - THREADS=20
     volumes:
       - medocker_config:/app/config
-      - medocker_data:/app/data
     ports:
       - "9876:9876"  # Expose to all interfaces, not just localhost
     restart: unless-stopped
@@ -28,8 +27,6 @@ services:
 
 volumes:
   medocker_config:
-    driver: local
-  medocker_data:
     driver: local
 
 networks:
