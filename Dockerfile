@@ -17,6 +17,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HOST=0.0.0.0 \
     FLASK_ENV=production
 
+# Create necessary directories first
+RUN mkdir -p /app/src /app/config /app/templates /app/static /app/playbooks
+
 # Install Poetry
 RUN pip install --no-cache-dir poetry==1.5.1
 
@@ -25,6 +28,9 @@ COPY pyproject.toml /app/
 
 # Configure poetry to not use virtualenv
 RUN poetry config virtualenvs.create false
+
+# Create an empty src/__init__.py file to make the package valid
+RUN touch /app/src/__init__.py
 
 # Generate a fresh lock file and install dependencies
 RUN poetry lock --no-update && poetry install --only main --no-interaction --no-ansi
@@ -63,9 +69,6 @@ if __name__ == '__main__':\n\
     from waitress import serve\n\
     serve(app, host=host, port=port, threads=20)\n\
 " > /app/start_app.py
-
-# Create necessary directories
-RUN mkdir -p /app/config /app/templates /app/static /app/playbooks
 
 # Expose port
 EXPOSE 9876
