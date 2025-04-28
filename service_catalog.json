@@ -1,0 +1,275 @@
+{
+  "docker_services": [
+    {
+      "id": "openemr",
+      "name": "OpenEMR",
+      "description": "Electronic Medical Records system",
+      "version": "7.0.0",
+      "tags": ["free", "open-source", "emr", "clinical"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 2,
+        "storage": 5
+      }
+    },
+    {
+      "id": "nextcloud",
+      "name": "Nextcloud",
+      "description": "Secure file sharing and collaboration",
+      "version": "25.0.3",
+      "tags": ["free", "open-source", "storage"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 2,
+        "storage": 10
+      }
+    },
+    {
+      "id": "vaultwarden",
+      "name": "Vaultwarden",
+      "description": "Password management solution",
+      "version": "latest",
+      "tags": ["free", "open-source", "security"],
+      "requirements": {
+        "cpu": 0.5,
+        "ram": 0.5,
+        "storage": 1
+      }
+    },
+    {
+      "id": "keycloak",
+      "name": "Keycloak",
+      "description": "Identity and access management",
+      "version": "21.1.1",
+      "tags": ["free", "open-source", "security"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 1,
+        "storage": 2
+      }
+    },
+    {
+      "id": "orthanc",
+      "name": "Orthanc DICOM Server",
+      "description": "Medical imaging archive",
+      "version": "1.9.7",
+      "tags": ["free", "open-source", "imaging", "radiology"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 2,
+        "storage": 10
+      }
+    },
+    {
+      "id": "traefik",
+      "name": "Traefik",
+      "description": "Modern reverse proxy and load balancer",
+      "version": "v2.9",
+      "tags": ["free", "open-source", "infrastructure"],
+      "requirements": {
+        "cpu": 0.5,
+        "ram": 0.5,
+        "storage": 0.5
+      }
+    },
+    {
+      "id": "mariadb",
+      "name": "MariaDB",
+      "description": "Open source relational database",
+      "version": "10.6",
+      "tags": ["free", "open-source", "database"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 1,
+        "storage": 5
+      }
+    },
+    {
+      "id": "postgres",
+      "name": "PostgreSQL",
+      "description": "Advanced open source database",
+      "version": "14.5",
+      "tags": ["free", "open-source", "database"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 1,
+        "storage": 5
+      }
+    },
+    {
+      "id": "metabase",
+      "name": "Metabase",
+      "description": "Business intelligence and analytics",
+      "version": "v0.44.6",
+      "tags": ["free", "open-source", "analytics"],
+      "requirements": {
+        "cpu": 2,
+        "ram": 2,
+        "storage": 5
+      }
+    },
+    {
+      "id": "redcap",
+      "name": "REDCap",
+      "description": "Research data capture",
+      "version": "13.1.5",
+      "tags": ["free", "research", "clinical-trials"],
+      "requirements": {
+        "cpu": 2,
+        "ram": 4,
+        "storage": 10
+      }
+    },
+    {
+      "id": "ecgapi",
+      "name": "ECG Analysis API",
+      "description": "Electrocardiogram analysis service",
+      "version": "1.2.0",
+      "tags": ["enterprise", "cardiology", "diagnostics"],
+      "requirements": {
+        "cpu": 2,
+        "ram": 2,
+        "storage": 3
+      }
+    },
+    {
+      "id": "rusdesk",
+      "name": "RustDesk",
+      "description": "Remote desktop support tool",
+      "version": "latest",
+      "tags": ["free", "open-source", "support"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 1,
+        "storage": 1
+      }
+    }
+  ],
+  "ai_services": [
+    {
+      "id": "medllm",
+      "name": "MedLLM",
+      "description": "Specialized medical language model",
+      "version": "7B parameters",
+      "tags": ["free", "local", "nlp", "diagnosis"],
+      "requirements": {
+        "cpu": 2,
+        "ram": 4,
+        "storage": 8,
+        "gpu": "recommended"
+      }
+    },
+    {
+      "id": "medllm-api",
+      "name": "MedLLM API",
+      "description": "Cloud-based medical language model",
+      "version": "13B parameters",
+      "tags": ["api", "enterprise", "nlp", "diagnosis"],
+      "api_key_required": true
+    },
+    {
+      "id": "ecg-analyzer",
+      "name": "ECG Analyzer AI",
+      "description": "AI-powered ECG analysis",
+      "version": "2.0",
+      "tags": ["free", "local", "cardiology", "diagnostics"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 2,
+        "storage": 3
+      }
+    },
+    {
+      "id": "medical-scribe",
+      "name": "Medical Scribe AI",
+      "description": "Automated medical documentation assistant",
+      "version": "1.5.0",
+      "tags": ["enterprise", "api", "documentation"],
+      "api_key_required": true
+    },
+    {
+      "id": "radiology-assistant",
+      "name": "Radiology Assistant",
+      "description": "AI-powered radiology image analysis",
+      "version": "3.2.1",
+      "tags": ["enterprise", "local", "radiology", "imaging"],
+      "requirements": {
+        "cpu": 4,
+        "ram": 8,
+        "storage": 20,
+        "gpu": "required"
+      }
+    },
+    {
+      "id": "health-predictor",
+      "name": "Health Predictor",
+      "description": "Predictive analytics for patient outcomes",
+      "version": "2.1.0",
+      "tags": ["enterprise", "api", "analytics", "prediction"],
+      "api_key_required": true
+    }
+  ],
+  "specialty_stacks": [
+    {
+      "id": "general",
+      "name": "General Practice",
+      "description": "Complete stack for general medical practices",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "rusdesk"
+      ]
+    },
+    {
+      "id": "cardiology",
+      "name": "Cardiology",
+      "description": "Complete stack for cardiology practices",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "orthanc",
+        "ecgapi",
+        "ecg-analyzer"
+      ]
+    },
+    {
+      "id": "radiology",
+      "name": "Radiology",
+      "description": "Complete stack for radiology centers",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "postgres",
+        "orthanc",
+        "radiology-assistant"
+      ]
+    },
+    {
+      "id": "research",
+      "name": "Clinical Research",
+      "description": "Stack for clinical research and trials",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "postgres",
+        "redcap",
+        "metabase"
+      ]
+    }
+  ]
+} 
