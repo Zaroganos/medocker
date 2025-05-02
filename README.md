@@ -1,5 +1,7 @@
 # Medocker
 
+![Screenshot 2025-05-02 005811](https://github.com/user-attachments/assets/5b5454c1-3283-4405-8acf-e562ceefe3f8)
+
 **Clinic in a box by way of docker stack**
 
 Medocker is a comprehensive Docker packaging of all the software a medical practice needs, including:
