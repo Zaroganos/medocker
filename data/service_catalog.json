@@ -143,6 +143,54 @@
         "ram": 1,
         "storage": 1
       }
+    },
+    {
+      "id": "kde-connect",
+      "name": "KDE Connect",
+      "description": "Multi-platform app enabling seamless communication between phone and computer with shared clipboard, notification sync, file sharing, and remote control",
+      "version": "25.11.70",
+      "tags": ["free", "open-source", "integration", "mobile", "communication"],
+      "requirements": {
+        "cpu": 0.5,
+        "ram": 0.5,
+        "storage": 1
+      }
+    },
+    {
+      "id": "pangolin",
+      "name": "Pangolin",
+      "description": "Self-hosted reverse proxy server that securely exposes private resources on distributed networks through encrypted tunnels, enabling access from anywhere without opening ports",
+      "version": "latest",
+      "tags": ["free", "open-source", "infrastructure", "proxy", "security", "tunneling"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 1,
+        "storage": 1
+      }
+    },
+    {
+      "id": "thunderbird",
+      "name": "Thunderbird",
+      "description": "Open-source email client with calendar and contact management, offering secure email communication and personal information management",
+      "version": "latest",
+      "tags": ["free", "open-source", "email", "communication", "pim"],
+      "requirements": {
+        "cpu": 1,
+        "ram": 1,
+        "storage": 2
+      }
+    },
+    {
+      "id": "hapi-fhir",
+      "name": "HAPI FHIR",
+      "description": "Java API for building HL7 FHIR clients and servers, providing comprehensive tools for healthcare data interoperability and standards compliance",
+      "version": "latest",
+      "tags": ["free", "open-source", "healthcare", "interoperability", "fhir", "java", "api"],
+      "requirements": {
+        "cpu": 2,
+        "ram": 4,
+        "storage": 5
+      }
     }
   ],
   "ai_services": [
@@ -207,6 +255,19 @@
       "version": "2.1.0",
       "tags": ["enterprise", "api", "analytics", "prediction"],
       "api_key_required": true
+    },
+    {
+      "id": "medgemma",
+      "name": "MedGemma",
+      "description": "Google's medical-focused multimodal AI model offering Gemma variants trained for medical text and image comprehension, enabling healthcare AI applications with both text-only and multimodal capabilities",
+      "version": "4B-27B parameters",
+      "tags": ["free", "local", "multimodal", "imaging", "diagnosis", "ai", "healthcare"],
+      "requirements": {
+        "cpu": 2,
+        "ram": 4,
+        "storage": 6,
+        "gpu": "recommended"
+      }
     }
   ],
   "app_services": [
@@ -303,6 +364,138 @@
         "postgres",
         "redcap",
         "metabase"
+      ]
+    },
+    {
+      "id": "emergency",
+      "name": "Emergency Medicine",
+      "description": "Stack optimized for emergency departments and urgent care with rapid access and critical care tools",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "rustdesk",
+        "kde-connect",
+        "medgemma"
+      ]
+    },
+    {
+      "id": "pediatrics",
+      "name": "Pediatrics",
+      "description": "Specialized stack for pediatric practices with child-focused healthcare tools and family management",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "orthanc",
+        "medgemma",
+        "thunderbird"
+      ]
+    },
+    {
+      "id": "oncology",
+      "name": "Oncology",
+      "description": "Comprehensive cancer treatment and research stack with advanced imaging and AI analysis capabilities",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "postgres",
+        "orthanc",
+        "radiology-assistant",
+        "medgemma",
+        "metabase"
+      ]
+    },
+    {
+      "id": "mental-health",
+      "name": "Mental Health",
+      "description": "Specialized stack for psychiatry, psychology, and behavioral health practices",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "medgemma",
+        "thunderbird",
+        "hapi-fhir"
+      ]
+    },
+    {
+      "id": "surgery",
+      "name": "Surgery",
+      "description": "Perioperative and surgical care stack with advanced imaging and remote monitoring capabilities",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "postgres",
+        "orthanc",
+        "rustdesk",
+        "medgemma"
+      ]
+    },
+    {
+      "id": "laboratory",
+      "name": "Laboratory Medicine",
+      "description": "Pathology and laboratory services stack with advanced analytics and reporting tools",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "postgres",
+        "orthanc",
+        "metabase",
+        "medgemma",
+        "hapi-fhir"
+      ]
+    },
+    {
+      "id": "telemedicine",
+      "name": "Telemedicine",
+      "description": "Remote healthcare delivery stack optimized for virtual consultations and remote patient monitoring",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "rustdesk",
+        "kde-connect",
+        "medgemma",
+        "pangolin"
+      ]
+    },
+    {
+      "id": "rehabilitation",
+      "name": "Rehabilitation",
+      "description": "Physical therapy and recovery stack with patient progress tracking and outcome measurement tools",
+      "services": [
+        "openemr",
+        "nextcloud",
+        "vaultwarden",
+        "keycloak",
+        "traefik",
+        "mariadb",
+        "medgemma",
+        "metabase",
+        "thunderbird"
       ]
     }
   ]
