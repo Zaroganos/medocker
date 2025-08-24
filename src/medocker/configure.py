@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2024-2025 Iliya Yaroshevskiy
 """
 Medocker Configuration Tool
 
-This script generates docker-compose files and other configuration based on the
+This script generates docker compose files and other configuration based on the
 user's selections in the config directory.
 """
 

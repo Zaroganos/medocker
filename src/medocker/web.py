@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2024-2025 Iliya Yaroshevskiy
 """
 Medocker Web Configuration Tool
 
@@ -20,34 +22,35 @@ from flask_cors import CORS
 from waitress import serve
 
 # Import configuration
-from src.config import get_config
+from .config import get_config
+from .configure import run_ansible_playbook
 
 # Try different import paths for configure.py
 try:
     # Try relative import first (within the same package)
-    from src.configure import (
-        load_config, 
-        save_config, 
-        generate_password,
-        resolve_variable_references,
+    from .configure import (
         generate_docker_compose,
+        generate_ansible_playbook,
+        load_config,
+        save_config,
+        interactive_configuration,
+        resolve_variable_references,
         create_directories,
         deploy_docker_compose_ssh,
-        generate_ansible_playbook,
-        run_ansible_playbook
+        generate_password
     )
 except ImportError:
     # Fall back to direct import (for backward compatibility)
-    from configure import (
-        load_config, 
-        save_config, 
-        generate_password,
-        resolve_variable_references,
+    from .configure import (
         generate_docker_compose,
+        generate_ansible_playbook,
+        load_config,
+        save_config,
+        interactive_configuration,
+        resolve_variable_references,
         create_directories,
         deploy_docker_compose_ssh,
-        generate_ansible_playbook,
-        run_ansible_playbook
+        generate_password
     )
 
 # Load configuration based on environment

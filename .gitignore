@@ -188,3 +188,9 @@ build/
 # Distribution packages
 medocker-*.zip
 medocker-*.tar.gz
+
+# Cursor
+.cursorrules
+
+# Development notes
+dev-notes/

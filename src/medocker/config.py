@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2024-2025 Iliya Yaroshevskiy
 """
 Medocker Configuration Settings
 
@@ -24,8 +26,12 @@ class Config:
     # Security settings
     PREFERRED_URL_SCHEME = 'https'
     
-    # Medocker settings
-    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    # Medocker settings - Use consistent relative paths for both dev and prod
+    # The src/medocker/ directory is always relative to the project root
+    # This works regardless of where the code is executed from
+    current_file_dir = os.path.dirname(os.path.abspath(__file__))  # src/medocker/
+    PROJECT_ROOT = os.path.abspath(os.path.join(current_file_dir, '..', '..'))  # project root
+    
     TEMPLATES_DIR = os.path.join(PROJECT_ROOT, 'templates')
     STATIC_DIR = os.path.join(PROJECT_ROOT, 'static')
     DEFAULT_CONFIG_FILE = os.path.join(PROJECT_ROOT, 'config/default.yml')

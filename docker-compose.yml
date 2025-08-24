@@ -6,17 +6,18 @@ services:
     image: medocker-web
     container_name: medocker-web
     environment:
-      - PORT=9876
-      - HOST=0.0.0.0
-      - FLASK_ENV=production
+      - PORT=${PORT:-9876}
+      - HOST=${HOST:-0.0.0.0}
+      - FLASK_ENV=${FLASK_ENV:-production}
       - SECRET_KEY=${SECRET_KEY:-generate_a_strong_secret_key}
-      - SECURE_COOKIES=true
+      - SECURE_COOKIES=${SECURE_COOKIES:-true}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
-      - THREADS=20
+      - THREADS=${THREADS:-20}
     volumes:
       - medocker_config:/app/config
+      - ${DATA_VOLUME:-medocker_data}:/app/data
     ports:
-      - "9876:9876"  # Expose to all interfaces, not just localhost
+      - "${BIND_ADDRESS:-0.0.0.0}:9876:9876"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9876/"]
@@ -27,6 +28,8 @@ services:
 
 volumes:
   medocker_config:
+    driver: local
+  medocker_data:
     driver: local
 
 networks:

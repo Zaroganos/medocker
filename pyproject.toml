@@ -1,47 +1,59 @@
-[tool.poetry]
+[project]
 name = "medocker"
 version = "0.1.0"
 description = "A comprehensive Docker packaging of all the software a medical practice needs"
-authors = ["Iliya Yaroshevskiy <iliya.yaroshevskiy@gmail.com>"]
+authors = [
+    {name = "Iliya Yaroshevskiy", email = "iyarosh1@binghamton.edu"}
+]
 readme = "README.md"
-license = "GNU Affero GPLv3"
-repository = "https://github.com/Zaroganos/medocker"
+license = {text = "GNU Affero GPLv3"}
+requires-python = ">=3.12,<3.14"
 keywords = ["docker", "ansible", "healthcare", "medical", "emr", "keycloak"]
-packages = [{include = "src"}]
+dependencies = [
+    "PyYAML>=6.0.1",
+    "flask>=3.0.0",
+    "flask-wtf>=1.2.1",
+    "wtforms>=3.1.1",
+    "waitress>=3.0.0",
+    "paramiko>=3.4.0",
+    "ansible-runner>=2.4.0",
+    "jinja2>=3.1.3",
+    "Flask-Session>=0.6.0",
+    "flask-cors>=4.0.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.14"
-PyYAML = "^6.0"
-flask = "^2.2.3"
-flask-wtf = "^1.1.1"
-wtforms = "^3.0.1"
-waitress = "^2.1.2"
-paramiko = "^3.3.1"
-ansible-runner = "^2.3.4"
-jinja2 = "^3.1.3"
-Flask-Session = "^0.5.0"
-flask-cors = "^4.0.0"
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+    "flake8>=7.0.0",
+    "isort>=5.13.0",
+    "pyinstaller>=6.10.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.3.1"
-black = "^23.3.0"
-flake8 = "^6.0.0"
-isort = "^5.12.0"
-pyinstaller = "^6.10.0"
+[project.scripts]
+medocker = "medocker:medocker_main"
+medocker-config = "medocker:configure_main"
+medocker-web = "medocker:web_main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-medocker = "src.medocker:main"
-medocker-config = "src.configure:main"
-medocker-web = "src.run_web:main"
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"
 
 [tool.black]
 line-length = 88
-target-version = ["py38"]
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
-line_length = 88 
+line_length = 88
+
+[tool.uv]
+# uv-specific configuration
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+    "flake8>=7.0.0",
+    "isort>=5.13.0",
+    "pyinstaller>=6.10.0",
+] 
