@@ -33,8 +33,6 @@ dev = [
 
 [project.scripts]
 medocker = "medocker:medocker_main"
-medocker-config = "medocker:configure_main"
-medocker-web = "medocker:web_main"
 
 [build-system]
 requires = ["uv_build>=0.8.13,<0.9.0"]

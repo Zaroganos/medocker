@@ -24,45 +24,60 @@ if parent_dir not in sys.path:
 # Add some platform-specific handling for Windows
 is_windows = platform.system() == "Windows" or sys.platform == "win32"
 
-def main():
+def main(host=None, port=None, debug=None):
     """Main entry point for the Medocker web interface."""
-    parser = argparse.ArgumentParser(
-        description="Medocker Web Interface - Medical Practice Software Stack Manager",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+    
+    # If arguments are provided programmatically, use them directly
+    if host is not None and port is not None and debug is not None:
+        # Use provided arguments directly
+        final_host = host
+        final_port = port
+        final_debug = debug
+    else:
+        # Parse arguments from command line
+        parser = argparse.ArgumentParser(
+            description="Medocker Web Interface - Medical Practice Software Stack Manager",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog="""
 Examples:
-  medocker-web --help                    Show this help message
-  medocker-web --port 8080              Launch on port 8080
-  medocker-web --host 127.0.0.1        Launch on localhost only
+  medocker --web --help                    Show this help message
+  medocker --web --port 8080              Launch on port 8080
+  medocker --web --host 127.0.0.1        Launch on localhost only
         """
-    )
-    
-    parser.add_argument(
-        '--host',
-        default='0.0.0.0',
-        help='Host to bind the web server to (default: 0.0.0.0)'
-    )
-    
-    parser.add_argument(
-        '--port',
-        type=int,
-        default=9876,
-        help='Port to bind the web server to (default: 9876)'
-    )
-    
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='Run in debug mode'
-    )
-    
-    parser.add_argument(
-        '--version',
-        action='version',
-        version='%(prog)s 0.1.0'
-    )
-    
-    args = parser.parse_args()
+        )
+        
+        parser.add_argument(
+            '--host',
+            default=host or '0.0.0.0',
+            help='Host to bind the web server to (default: 0.0.0.0)'
+        )
+        
+        parser.add_argument(
+            '--port',
+            type=int,
+            default=port or 9876,
+            help='Port to bind the web server to (default: 9876)'
+        )
+        
+        parser.add_argument(
+            '--debug',
+            action='store_true',
+            default=debug or False,
+            help='Run in debug mode'
+        )
+        
+        parser.add_argument(
+            '--version',
+            action='version',
+            version='%(prog)s 0.1.0'
+        )
+        
+        args = parser.parse_args()
+        
+        # Use the parsed arguments
+        final_host = args.host
+        final_port = args.port
+        final_debug = args.debug
     
     # Then import the web module
     try:
@@ -91,19 +106,19 @@ Examples:
                 return 1
     
     # Launch the web interface
-    print(f"Starting Medocker web interface on {args.host}:{args.port}")
+    print(f"Starting Medocker web interface on {final_host}:{final_port}")
     
-    if not args.debug:
+    if not final_debug:
         # Open browser automatically
         def open_browser():
             time.sleep(1.5)  # Wait for server to start
-            url = f"http://{args.host if args.host != '0.0.0.0' else 'localhost'}:{args.port}"
+            url = f"http://{final_host if final_host != '0.0.0.0' else 'localhost'}:{final_port}"
             webbrowser.open(url)
         
         threading.Thread(target=open_browser, daemon=True).start()
     
     # Run the web server
-    web_main(host=args.host, port=args.port, debug=args.debug)
+    web_main(host=final_host, port=final_port, debug=final_debug)
     
     return 0
 

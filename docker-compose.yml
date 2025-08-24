@@ -1,10 +1,10 @@
 services:
-  medocker-web:
+  medocker:
     build:
       context: .
       dockerfile: Dockerfile
-    image: medocker-web
-    container_name: medocker-web
+    image: medocker
+    container_name: medocker
     environment:
       - PORT=${PORT:-9876}
       - HOST=${HOST:-0.0.0.0}

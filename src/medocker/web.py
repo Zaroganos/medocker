@@ -758,17 +758,19 @@ def simple_test():
     })
 
 
-def main():
+def main(host=None, port=None, debug=None):
     """Main entry point for the Medocker web configuration tool."""
-    host = config.HOST
-    port = config.PORT
+    # Use provided arguments or fall back to config
+    host = host or config.HOST
+    port = port or config.PORT
+    debug = debug if debug is not None else config.DEBUG
     
     print(f"Starting Medocker Web Configuration Tool at http://{host}:{port}")
     print(f"Using port from environment: {os.environ.get('PORT', 'Not set')}")
     
     # Use waitress for production
-    if os.environ.get('FLASK_ENV') == 'development':
-        app.run(host=host, port=port, debug=config.DEBUG)
+    if os.environ.get('FLASK_ENV') == 'development' or debug:
+        app.run(host=host, port=port, debug=debug)
     else:
         serve(app, host=host, port=port, threads=config.THREADS)
 

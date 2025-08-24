@@ -36,16 +36,40 @@ def main():
 Examples:
   medocker --help                    Show this help message
   medocker --web                     Launch the web interface
+  medocker --web --port 8080        Launch web interface on port 8080
+  medocker --web --host 127.0.0.1   Launch web interface on localhost only
+  medocker --web --debug             Launch web interface in debug mode
   medocker --configure               Run configuration tool
         """
     )
     
+    # Web interface arguments
     parser.add_argument(
         '--web', 
         action='store_true',
         help='Launch the web interface'
     )
     
+    parser.add_argument(
+        '--host',
+        default='0.0.0.0',
+        help='Host to bind the web server to (default: 0.0.0.0)'
+    )
+    
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=9876,
+        help='Port to bind the web server to (default: 9876)'
+    )
+    
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='Run in debug mode'
+    )
+    
+    # Configuration tool argument
     parser.add_argument(
         '--configure', 
         action='store_true',
@@ -61,8 +85,9 @@ Examples:
     args = parser.parse_args()
     
     if args.web:
-        logger.info("Launching Medocker web interface...")
-        run_web_main()
+        logger.info(f"Launching Medocker web interface on {args.host}:{args.port}")
+        # Pass the arguments to the web interface
+        run_web_main(host=args.host, port=args.port, debug=args.debug)
     elif args.configure:
         logger.info("Running Medocker configuration tool...")
         run_configuration(args)

@@ -128,10 +128,16 @@ medocker.exe deploy
 #### Development Workflow
 
 ```bash
-# Use the unified CLI tools (recommended)
+# Use the unified CLI tool (recommended)
 uv run medocker --help
-uv run medocker-config --help
-uv run medocker-web
+uv run medocker --web --help
+uv run medocker --configure --help
+
+# Launch the web interface
+uv run medocker --web
+
+# Run configuration tool
+uv run medocker --configure
 
 # Or run modules directly
 uv run python -m medocker.medocker --help
